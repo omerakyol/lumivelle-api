@@ -1,0 +1,9 @@
+﻿using System.Collections.Generic;
+
+namespace Core.Utilities.Results;
+
+public interface IResult
+{
+    bool Success { get; }
+    List<ResultMessage> Messages { get; set; }
+}

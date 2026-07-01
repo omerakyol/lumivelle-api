@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Version>1.0.0</Version>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Remove="Helpers\EnumerableExtensions.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.2.0"/> 
+        <PackageReference Include="FirebaseAdmin" Version="3.5.0" />
+        <PackageReference Include="Google.Apis.AndroidPublisher.v3" Version="1.74.0.4165" />
+        <PackageReference Include="Hangfire.Mongo" Version="1.16.0"/>
+
+        <PackageReference Include="Mapster" Version="10.0.9"/>
+        <PackageReference Include="FluentValidation" Version="12.1.1"/>
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1"/>
+        <PackageReference Include="Hangfire.InMemory" Version="1.0.0"/>
+        <PackageReference Include="Hangfire.RecurringJobExtensions" Version="1.1.6"/>
+        <PackageReference Include="MediatR" Version="14.1.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.11"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.9"/>
+        <PackageReference Include="Otp.NET" Version="1.4.1"/>
+        <PackageReference Include="QRCoder" Version="1.8.0" />
+        <PackageReference Include="QuestPDF" Version="2026.6.1" />
+        <PackageReference Include="Refit" Version="12.0.0"/>
+        <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
+        <PackageReference Include="System.ServiceModel.Duplex" Version="6.0.0"/>
+        <PackageReference Include="System.ServiceModel.Http" Version="10.0.652802" />
+        <PackageReference Include="System.ServiceModel.NetTcp" Version="10.0.652802" />
+        <PackageReference Include="System.ServiceModel.Security" Version="6.0.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\DataAccess\DataAccess.csproj"/>
+    </ItemGroup>
+</Project>
