@@ -16,6 +16,7 @@ using Core.Utilities.TaskScheduler.Hangfire;
 using Core.Utilities.TaskScheduler.Hangfire.Models;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFramework;
+using DataAccess.Concrete.MongoDb;
 using DataAccess.Concrete.MongoDb.Context;
 using FluentValidation;
 using Hangfire;
@@ -93,6 +94,8 @@ public partial class BusinessStartup(IConfiguration configuration, IHostEnvironm
         services.AddScoped<ITranslateRepository, TranslateRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IBeautyProfileRepository, BeautyProfileRepository>();
+        services.AddScoped<IStylePreferenceRepository, StylePreferenceRepository>();
 
         var taskSchedulerConfig = Configuration.GetSection("TaskSchedulerOptions").Get<TaskSchedulerConfig>();
         if (taskSchedulerConfig.Enabled)
