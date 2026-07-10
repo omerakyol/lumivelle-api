@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
 using Business.Helpers;
+using Business.Services.Claude;
 using Core.Constants;
 using Core.CrossCuttingConcerns.Logging.Serilog.Loggers;
 using Core.DataAccess.MongoDb.Concrete.Configurations;
@@ -96,6 +97,9 @@ public partial class BusinessStartup(IConfiguration configuration, IHostEnvironm
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IBeautyProfileRepository, BeautyProfileRepository>();
         services.AddScoped<IStylePreferenceRepository, StylePreferenceRepository>();
+
+        services.AddHttpClient("claude", client => client.Timeout = TimeSpan.FromSeconds(60));
+        services.AddScoped<IClaudeVisionService, ClaudeVisionService>();
 
         var taskSchedulerConfig = Configuration.GetSection("TaskSchedulerOptions").Get<TaskSchedulerConfig>();
         if (taskSchedulerConfig.Enabled)
