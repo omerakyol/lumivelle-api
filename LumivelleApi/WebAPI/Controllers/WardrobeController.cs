@@ -5,6 +5,7 @@ using Business.Handlers.Wardrobe.Commands.DeleteWardrobeItem;
 using Business.Handlers.Wardrobe.Commands.MarkWorn;
 using Business.Handlers.Wardrobe.Commands.ToggleFavorite;
 using Business.Handlers.Wardrobe.Commands.UpdateWardrobeItem;
+using Business.Handlers.Wardrobe.Queries.GetPaletteGaps;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeItem;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeItems;
 using Microsoft.AspNetCore.Mvc;
@@ -75,5 +76,12 @@ public class WardrobeController : BaseApiController
     public async Task<IActionResult> GetItem([FromRoute] string id)
     {
         return GetResponse(await Mediator.Send(new GetWardrobeItemQueryRequest { Id = id }));
+    }
+
+    /// <summary>Palette colors with no wardrobe item covering them</summary>
+    [HttpGet("palette-gaps")]
+    public async Task<IActionResult> GetPaletteGaps()
+    {
+        return GetResponse(await Mediator.Send(new GetPaletteGapsQueryRequest()));
     }
 }
