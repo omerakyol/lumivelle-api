@@ -2,6 +2,8 @@ using System.Threading.Tasks;
 using Business.Handlers.Wardrobe.Commands.AnalyzeWardrobeItem;
 using Business.Handlers.Wardrobe.Commands.CreateWardrobeItem;
 using Business.Handlers.Wardrobe.Commands.DeleteWardrobeItem;
+using Business.Handlers.Wardrobe.Commands.MarkWorn;
+using Business.Handlers.Wardrobe.Commands.ToggleFavorite;
 using Business.Handlers.Wardrobe.Commands.UpdateWardrobeItem;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,5 +45,19 @@ public class WardrobeController : BaseApiController
     {
         var result = await Mediator.Send(new DeleteWardrobeItemCommandRequest { Id = id });
         return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    /// <summary>Toggle favorite status</summary>
+    [HttpPost("items/{id}/favorite")]
+    public async Task<IActionResult> ToggleFavorite([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new ToggleFavoriteCommandRequest { Id = id }));
+    }
+
+    /// <summary>Record that the item was worn today</summary>
+    [HttpPost("items/{id}/worn")]
+    public async Task<IActionResult> MarkWorn([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new MarkWornCommandRequest { Id = id }));
     }
 }
