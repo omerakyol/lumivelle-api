@@ -5,6 +5,8 @@ using Business.Handlers.Wardrobe.Commands.DeleteWardrobeItem;
 using Business.Handlers.Wardrobe.Commands.MarkWorn;
 using Business.Handlers.Wardrobe.Commands.ToggleFavorite;
 using Business.Handlers.Wardrobe.Commands.UpdateWardrobeItem;
+using Business.Handlers.Wardrobe.Queries.GetWardrobeItem;
+using Business.Handlers.Wardrobe.Queries.GetWardrobeItems;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -59,5 +61,19 @@ public class WardrobeController : BaseApiController
     public async Task<IActionResult> MarkWorn([FromRoute] string id)
     {
         return GetResponse(await Mediator.Send(new MarkWornCommandRequest { Id = id }));
+    }
+
+    /// <summary>List the current user's wardrobe items, optionally filtered by category</summary>
+    [HttpGet("items")]
+    public async Task<IActionResult> GetItems([FromQuery] string category = null)
+    {
+        return GetResponse(await Mediator.Send(new GetWardrobeItemsQueryRequest { Category = category }));
+    }
+
+    /// <summary>Get a single wardrobe item</summary>
+    [HttpGet("items/{id}")]
+    public async Task<IActionResult> GetItem([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new GetWardrobeItemQueryRequest { Id = id }));
     }
 }
