@@ -5,4 +5,5 @@ namespace Business.Handlers.Recommendations.Queries.GetDailyEdit;
 
 public class GetDailyEditQueryRequest : IRequest<IDataResult<DailyEditResult>>
 {
+    public string LocalDate { get; set; }
 }

@@ -11,4 +11,9 @@ public interface IClaudeVisionService
         string systemPrompt,
         string userPrompt,
         CancellationToken cancellationToken);
+
+    Task<string> AnalyzeTextAsync(
+        string systemPrompt,
+        string userPrompt,
+        CancellationToken cancellationToken);
 }

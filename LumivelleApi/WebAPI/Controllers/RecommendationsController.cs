@@ -11,10 +11,10 @@ namespace WebAPI.Controllers;
 [ApiController]
 public class RecommendationsController : BaseApiController
 {
-    /// <summary>Get the season-seeded daily edit for the current user</summary>
+    /// <summary>Get today's personalised recommendation for the current user</summary>
     [HttpGet("daily")]
-    public async Task<IActionResult> GetDaily()
+    public async Task<IActionResult> GetDaily([FromQuery] string localDate)
     {
-        return GetResponse(await Mediator.Send(new GetDailyEditQueryRequest()));
+        return GetResponse(await Mediator.Send(new GetDailyEditQueryRequest { LocalDate = localDate }));
     }
 }

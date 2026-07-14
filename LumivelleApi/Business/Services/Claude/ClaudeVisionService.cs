@@ -66,4 +66,40 @@ public class ClaudeVisionService(
         using var document = JsonDocument.Parse(body);
         return document.RootElement.GetProperty("content")[0].GetProperty("text").GetString();
     }
+
+    public async Task<string> AnalyzeTextAsync(
+        string systemPrompt,
+        string userPrompt,
+        CancellationToken cancellationToken)
+    {
+        var options = configuration.GetSection("ClaudeOptions").Get<ClaudeOptions>() ?? new ClaudeOptions();
+        if (string.IsNullOrEmpty(options.ApiKey))
+            throw new ApplicationException("ClaudeOptions:ApiKey is not configured");
+
+        var payload = new
+        {
+            model = options.Model,
+            max_tokens = options.MaxTokens,
+            system = systemPrompt,
+            messages = new object[]
+            {
+                new { role = "user", content = userPrompt }
+            }
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{options.BaseUrl}/v1/messages");
+        request.Headers.Add("x-api-key", options.ApiKey);
+        request.Headers.Add("anthropic-version", "2023-06-01");
+        request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var client = httpClientFactory.CreateClient("claude");
+        var response = await client.SendAsync(request, cancellationToken);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw new ApplicationException($"Claude API error {(int)response.StatusCode}: {body}");
+
+        using var document = JsonDocument.Parse(body);
+        return document.RootElement.GetProperty("content")[0].GetProperty("text").GetString();
+    }
 }
