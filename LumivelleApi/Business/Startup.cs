@@ -96,6 +96,9 @@ public partial class BusinessStartup(IConfiguration configuration, IHostEnvironm
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IBeautyProfileRepository, BeautyProfileRepository>();
+        services.AddScoped<IWardrobeItemRepository, WardrobeItemRepository>();
+        services.AddScoped<IOutfitRepository, OutfitRepository>();
+        services.AddScoped<IDailyRecommendationRepository, DailyRecommendationRepository>();
         services.AddScoped<IStylePreferenceRepository, StylePreferenceRepository>();
 
         services.AddHttpClient("claude", client => client.Timeout = TimeSpan.FromSeconds(60));
