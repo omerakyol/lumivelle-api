@@ -21,7 +21,7 @@ public class OutfitsController : BaseApiController
     /// <summary>List the current user's saved outfits</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<List<OutfitResult>>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<List<OutfitResult>>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet]
     public async Task<IActionResult> GetOutfits()
     {
@@ -32,7 +32,7 @@ public class OutfitsController : BaseApiController
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<OutfitResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<OutfitResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost]
     public async Task<IActionResult> CreateOutfit([FromBody] CreateOutfitCommandRequest request)
     {
@@ -42,7 +42,7 @@ public class OutfitsController : BaseApiController
     /// <summary>Delete an outfit</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteOutfit([FromRoute] string id)
     {

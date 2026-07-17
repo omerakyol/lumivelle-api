@@ -21,7 +21,7 @@ public class AnalysisController : BaseApiController
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<BeautyProfileResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<BeautyProfileResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("analyze")]
     public async Task<IActionResult> Analyze([FromBody] AnalyzeCommandRequest request)
     {
@@ -31,7 +31,7 @@ public class AnalysisController : BaseApiController
     /// <summary>Get the current user's latest beauty profile</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<BeautyProfileResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<BeautyProfileResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile()
     {
@@ -41,7 +41,7 @@ public class AnalysisController : BaseApiController
     /// <summary>Get all past analyses, newest first</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<List<BeautyProfileResult>>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<List<BeautyProfileResult>>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("history")]
     public async Task<IActionResult> GetHistory()
     {

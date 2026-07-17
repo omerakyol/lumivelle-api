@@ -28,7 +28,7 @@ public class WardrobeController : BaseApiController
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<AnalyzeWardrobeItemResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<AnalyzeWardrobeItemResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("items/analyze")]
     public async Task<IActionResult> AnalyzeItem([FromBody] AnalyzeWardrobeItemCommandRequest request)
     {
@@ -39,7 +39,7 @@ public class WardrobeController : BaseApiController
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<WardrobeItemResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<WardrobeItemResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("items")]
     public async Task<IActionResult> CreateItem([FromBody] CreateWardrobeItemCommandRequest request)
     {
@@ -50,7 +50,7 @@ public class WardrobeController : BaseApiController
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<WardrobeItemResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<WardrobeItemResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPut("items/{id}")]
     public async Task<IActionResult> UpdateItem(
         [FromRoute] string id, [FromBody] UpdateWardrobeItemCommandRequest request)
@@ -62,7 +62,7 @@ public class WardrobeController : BaseApiController
     /// <summary>Delete a wardrobe item</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpDelete("items/{id}")]
     public async Task<IActionResult> DeleteItem([FromRoute] string id)
     {
@@ -73,7 +73,7 @@ public class WardrobeController : BaseApiController
     /// <summary>Toggle favorite status</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<WardrobeItemResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<WardrobeItemResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("items/{id}/favorite")]
     public async Task<IActionResult> ToggleFavorite([FromRoute] string id)
     {
@@ -83,7 +83,7 @@ public class WardrobeController : BaseApiController
     /// <summary>Record that the item was worn today</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<WardrobeItemResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<WardrobeItemResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("items/{id}/worn")]
     public async Task<IActionResult> MarkWorn([FromRoute] string id)
     {
@@ -93,7 +93,7 @@ public class WardrobeController : BaseApiController
     /// <summary>List the current user's wardrobe items, optionally filtered by category</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<List<WardrobeItemResult>>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<List<WardrobeItemResult>>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("items")]
     public async Task<IActionResult> GetItems([FromQuery] string category = null)
     {
@@ -103,7 +103,7 @@ public class WardrobeController : BaseApiController
     /// <summary>Get a single wardrobe item</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<WardrobeItemResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<WardrobeItemResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("items/{id}")]
     public async Task<IActionResult> GetItem([FromRoute] string id)
     {
@@ -113,7 +113,7 @@ public class WardrobeController : BaseApiController
     /// <summary>Palette colors with no wardrobe item covering them</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<List<PaletteGapResult>>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<List<PaletteGapResult>>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("palette-gaps")]
     public async Task<IActionResult> GetPaletteGaps()
     {

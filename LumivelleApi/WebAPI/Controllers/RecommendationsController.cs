@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Business.Handlers.Recommendations.Queries.GetDailyEdit;
 using Core.Utilities.Results;
@@ -16,7 +17,7 @@ public class RecommendationsController : BaseApiController
     /// <summary>Get today's personalised recommendation for the current user</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<DailyEditResult>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(IDataResult<DailyEditResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("daily")]
     public async Task<IActionResult> GetDaily([FromQuery] string localDate)
     {
