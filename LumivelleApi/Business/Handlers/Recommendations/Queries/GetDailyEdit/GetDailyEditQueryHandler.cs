@@ -5,8 +5,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Business.Handlers.Recommendations.ValidationRules;
 using Business.Handlers.Wardrobe;
 using Business.Services.Claude;
+using Core.Aspects.Autofac.Validation;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -45,6 +47,7 @@ public class GetDailyEditQueryHandler(
         """;
 
     [SecuredOperation(Priority = 1)]
+    [ValidationAspect(typeof(GetDailyEditValidator), Priority = 2)]
     public async Task<IDataResult<DailyEditResult>> Handle(
         GetDailyEditQueryRequest request,
         CancellationToken cancellationToken)
