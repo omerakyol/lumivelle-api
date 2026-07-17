@@ -1,7 +1,10 @@
 using System.Threading.Tasks;
+using Business.Handlers.Analysis;
 using Business.Handlers.Analysis.Commands.Analyze;
 using Business.Handlers.Analysis.Queries.GetHistory;
 using Business.Handlers.Analysis.Queries.GetProfile;
+using Core.Utilities.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -15,6 +18,8 @@ public class AnalysisController : BaseApiController
 {
     /// <summary>Run Claude vision analysis on an uploaded selfie</summary>
     [HttpPost("analyze")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<BeautyProfileResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<IActionResult> Analyze([FromBody] AnalyzeCommandRequest request)
     {
         return GetResponse(await Mediator.Send(request));
