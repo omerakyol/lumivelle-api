@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Business.Handlers.Accounts.Commands.UploadFile;
+using Core.Utilities.Results;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +27,9 @@ public class MediaController : BaseApiController
 
     /// <summary>Upload an image and get back its public URL</summary>
     [Consumes("multipart/form-data")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<UploadFileCommandResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [RequestSizeLimit(8_000_000)]
     [HttpPost("upload")]
     public async Task<IActionResult> Upload(IFormFile file)

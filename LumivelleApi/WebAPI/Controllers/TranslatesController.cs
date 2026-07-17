@@ -24,7 +24,7 @@ public class TranslatesController : BaseApiController
     /// <param name="language"></param>
     /// <returns></returns> 
     [Produces("application/json", "text/plain")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Translate>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ResultMessage>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("languages/{language}")]
     public async Task<IActionResult> GetTranslatesByLang([FromRoute] string? language = null)
@@ -55,7 +55,7 @@ public class TranslatesController : BaseApiController
     /// <returns></returns>
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ResultMessage>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] CreateTranslateCommand createTranslate)
@@ -70,7 +70,7 @@ public class TranslatesController : BaseApiController
     /// <returns></returns>
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ResultMessage>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("update")]
     public async Task<IActionResult> Update([FromBody] UpdateTranslateCommand command)
@@ -85,7 +85,7 @@ public class TranslatesController : BaseApiController
     /// <returns></returns>
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ResultMessage>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] string id)

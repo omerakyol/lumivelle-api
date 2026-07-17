@@ -8,6 +8,7 @@ using Core.Utilities.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using IResult = Core.Utilities.Results.IResult;
 
 namespace WebAPI.Controllers;
 
@@ -26,7 +27,7 @@ public class InAppPurchaseController : BaseApiController
     [AllowAnonymous]
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SuccessResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("validate-google-receipt")]
     public async Task<IActionResult> ValidateGoogleReceipt([FromBody] ValidateGoogleReceiptCommandRequest request)
@@ -43,7 +44,7 @@ public class InAppPurchaseController : BaseApiController
     [AllowAnonymous]
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SuccessResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("validate-apple-receipt")]
     public async Task<IActionResult> ValidateAppleReceipt([FromBody] ValidateAppleReceiptCommandRequest request)
