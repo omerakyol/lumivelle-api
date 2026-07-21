@@ -14,10 +14,10 @@ public class TulparHub(IMediator mediator, ISignalRClientHelper signalRClientHel
 {
     public override async Task OnConnectedAsync()
     {
-        var username = UserInfoExtensions.GetUsername();
+        var email = UserInfoExtensions.GetAccountEmail();
 
-        if (!string.IsNullOrWhiteSpace(username))
-            AccountConnectionHelper.AddAccount(Context.ConnectionId, username);
+        if (!string.IsNullOrWhiteSpace(email))
+            AccountConnectionHelper.AddAccount(Context.ConnectionId, email);
 
         await mediator.Send(new ConnectCommandRequest());
         await base.OnConnectedAsync();

@@ -9,9 +9,9 @@ public class Account : DocumentDbEntity
 {
     public AccountStatus AccountStatus { get; set; }
     public AccountType AccountType { get; set; }
-    [BsonRequired] public string Username { get; set; }
+    [BsonRequired] [EmailAddress] public string Email { get; set; }
     [BsonRequired] public string Password { get; set; }
-    [EmailAddress] public string Email { get; set; }
+
     [Phone] public string Phone { get; set; }
     public string FirebaseToken { get; set; }
     [StringLength(2)] public string Language { get; set; } = "en";

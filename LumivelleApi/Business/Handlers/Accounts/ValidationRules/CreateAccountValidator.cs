@@ -8,7 +8,7 @@ public class CreateAccountValidator : AbstractValidator<CreateAccountCommandRequ
 {
     public CreateAccountValidator()
     {
-        RuleFor(m => m.Username).NotEmpty().WithMessage(Messages.UsernameEmpty);
+        RuleFor(m => m.Email).EmailAddress().WithMessage(Messages.InvalidEmail);
         RuleFor(m => m.Password).Password();
         RuleFor(m => m.ConfirmPassword).Password();
         RuleFor(m => m.Password)

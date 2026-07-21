@@ -21,7 +21,6 @@ public class LoginCommandHandler(
     IAccountRepository accountRepository,
     IRefreshTokenRepository refreshTokenRepository,
     ITokenHelper tokenHelper,
-    IMediator mediator,
     IHttpContextAccessor httpContextAccessor)
     : IRequestHandler<LoginCommandRequest, IDataResult<LoginCommandResult>>
 {
@@ -31,7 +30,7 @@ public class LoginCommandHandler(
     {
         var account =
             await accountRepository.GetAsync(x =>
-                x.Username == request.Username && x.AccountStatus == AccountStatus.Active);
+                x.Email == request.Email && x.AccountStatus == AccountStatus.Active);
 
         // Use one generic message for both "no account" and "wrong password" to
         // avoid leaking which usernames exist (account enumeration).

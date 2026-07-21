@@ -26,7 +26,7 @@ public class RegisterCommandHandler(
     public async Task<IResult> Handle(RegisterCommandRequest request, CancellationToken cancellationToken)
     {
         var hasAlreadyAccount =
-            accountRepository.Any(x => x.Username == request.Username, true);
+            accountRepository.Any(x => x.Email == request.Email, true);
         if (hasAlreadyAccount)
             throw new ApplicationException(Messages.AccountAlreadyHave);
 
@@ -35,7 +35,7 @@ public class RegisterCommandHandler(
         var account = new Account
         {
             AccountType = AccountType.User,
-            Username = request.Username,
+            Email = request.Email,
             AccountStatus = AccountStatus.Active,
             Password = hashedPassword,
             FirebaseToken = request.FirebaseToken

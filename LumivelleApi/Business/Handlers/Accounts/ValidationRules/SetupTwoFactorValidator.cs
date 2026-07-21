@@ -8,7 +8,7 @@ public class SetupTwoFactorValidator : AbstractValidator<SetupTwoFactorCommandRe
 {
     public SetupTwoFactorValidator()
     {
-        RuleFor(m => m.Username).NotEmpty().WithMessage(Messages.UsernameEmpty);
+        RuleFor(m => m.Email).EmailAddress().WithMessage(Messages.InvalidEmail);
         RuleFor(m => m.Password).Password();
     }
 }

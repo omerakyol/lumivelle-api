@@ -26,7 +26,7 @@ public class SetupTwoFactorCommandHandler(
     {
         var account =
             await accountRepository.GetAsync(x =>
-                x.Username == request.Username && x.AccountStatus == AccountStatus.Active);
+                x.Email == request.Email && x.AccountStatus == AccountStatus.Active);
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 

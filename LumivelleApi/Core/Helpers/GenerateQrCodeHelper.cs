@@ -12,8 +12,8 @@ public static class GenerateQrCodeHelper
         if (string.IsNullOrWhiteSpace(data))
             throw new ArgumentException("Data cannot be null or empty.", nameof(data));
 
-        var encodedUsername = Uri.EscapeDataString(data);
-        var qrCodeUrl = $"{BaseUrl}?size={Size}&data={encodedUsername}";
+        var encodedEmail = Uri.EscapeDataString(data);
+        var qrCodeUrl = $"{BaseUrl}?size={Size}&data={encodedEmail}";
 
         return qrCodeUrl;
     }

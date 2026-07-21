@@ -5,7 +5,6 @@ using Business.Handlers.Accounts.ValidationRules;
 using Business.Helpers;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
-using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -24,7 +23,7 @@ public class SetupTwoFactorCommandHandler(
     {
         var account =
             await accountRepository.GetAsync(x =>
-                x.Username == request.Username && x.AccountStatus == AccountStatus.Active);
+                x.Email == request.Email && x.AccountStatus == AccountStatus.Active);
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 
@@ -33,7 +32,7 @@ public class SetupTwoFactorCommandHandler(
             throw new ApplicationException(Messages.PasswordError);
 
 
-        var otpUrl = GenerateOtpAuthUrl(account.Username, account.TwoFactorSecretKey, GlobalConfig.ApplicationName);
+        var otpUrl = GenerateOtpAuthUrl(account.Email, account.TwoFactorSecretKey, GlobalConfig.ApplicationName);
 
         if (account.TwoFactorEnabled && !string.IsNullOrWhiteSpace(account.TwoFactorSecretKey))
             return new SuccessDataResult<SetupTwoFactorCommandResult>(new SetupTwoFactorCommandResult
@@ -47,7 +46,7 @@ public class SetupTwoFactorCommandHandler(
         account.TwoFactorEnabled = true;
         await accountRepository.UpdateAsync(account);
 
-        otpUrl = GenerateOtpAuthUrl(account.Username, base32Secret, GlobalConfig.ApplicationName);
+        otpUrl = GenerateOtpAuthUrl(account.Email, base32Secret, GlobalConfig.ApplicationName);
         return new SuccessDataResult<SetupTwoFactorCommandResult>(new SetupTwoFactorCommandResult
         {
             QrCode = QrCodeHelper.GenerateQrCodeBase64(otpUrl),
@@ -55,9 +54,9 @@ public class SetupTwoFactorCommandHandler(
         });
     }
 
-    private string GenerateOtpAuthUrl(string username, string base32Secret, string issuer)
+    private string GenerateOtpAuthUrl(string email, string base32Secret, string issuer)
     {
-        var account = Uri.EscapeDataString(username);
+        var account = Uri.EscapeDataString(email);
         var escapedIssuer = Uri.EscapeDataString(issuer);
 
         return $"otpauth://totp/{escapedIssuer}:{account}?secret={base32Secret}&issuer={escapedIssuer}";

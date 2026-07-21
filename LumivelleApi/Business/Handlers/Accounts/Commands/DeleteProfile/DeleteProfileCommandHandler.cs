@@ -24,7 +24,7 @@ public class DeleteProfileCommandHandler(
             await accountRepository.GetAsync(x =>
                 x.Id == currentAccountId && x.AccountStatus == AccountStatus.Active) ??
             await accountRepository.GetAsync(x =>
-                x.Username == request.Username && x.AccountStatus == AccountStatus.Active);
+                x.Email == request.Email && x.AccountStatus == AccountStatus.Active);
 
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);

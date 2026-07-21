@@ -2,11 +2,11 @@ namespace Core.Constants;
 
 public static partial class Messages
 {
-    public static string InvalidUsername => "InvalidUsername";
-    public static string UsernameEmpty => "UsernameEmpty";
+    public static string InvalidEmail => "InvalidEmail";
+
     public static string AccountEmpty => "AccountEmpty";
     public static string AccountNotFound => "AccountNotFound";
-    public static string AccountAlreadyHave => "AccountAlreadyHave"; 
+    public static string AccountAlreadyHave => "AccountAlreadyHave";
     public static string AccountNotActive => "AccountNotActive";
     public static string OtpCodeEmpty => "OtpCodeEmpty";
     public static string OtpCodeInvalid => "OtpCodeInvalid";
@@ -19,8 +19,7 @@ public static partial class Messages
     public static string TokenEmpty => "TokenEmpty";
     public static string DeviceTokenEmpty => "DeviceTokenEmpty";
     public static string DeviceInformationEmpty => "DeviceInformationEmpty";
-    public static string DeviceIdEmpty => "DeviceIdEmpty";
-    public static string PublicKeyEmpty => "PublicKeyEmpty";
+    public static string DeviceIdEmpty => "DeviceIdEmpty"; 
     public static string YouAreBlocked => "YouAreBlocked";
     public static string YouCantUseAnotherDevice => "YouCantUseAnotherDevice";
     public static string DeviceAlreadyRegisteredFreeSubscription => "DeviceAlreadyRegisteredFreeSubscription";

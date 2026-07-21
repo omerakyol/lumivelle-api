@@ -8,7 +8,7 @@ public class VerifyTwoFactorValidator : AbstractValidator<VerifyTwoFactorCommand
 {
     public VerifyTwoFactorValidator()
     {
-        RuleFor(m => m.Username).NotEmpty().WithMessage(Messages.UsernameEmpty);
+        RuleFor(m => m.Email).EmailAddress().WithMessage(Messages.InvalidEmail);
         RuleFor(m => m.Password).Password();
         RuleFor(m => m.Code).NotEmpty().WithMessage(Messages.OtpCodeEmpty);
     }

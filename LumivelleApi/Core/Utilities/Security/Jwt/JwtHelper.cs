@@ -81,7 +81,8 @@ public class JwtHelper : ITokenHelper
     {
         var claims = new List<Claim>();
         claims.AddNameIdentifier(account.Id.ToString());
-        claims.AddNameUniqueIdentifier(account.Username);
+        claims.AddNameUniqueIdentifier(account.Email);
+        claims.AddEmail(account.Email);
         claims.AddAccountTypeIdentifier(account.AccountType.ToString());
         return claims;
     }

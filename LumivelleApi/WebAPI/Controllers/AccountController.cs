@@ -7,6 +7,7 @@ using Business.Handlers.Accounts.Commands.DeleteProfile;
 using Business.Handlers.Accounts.Commands.Login;
 using Business.Handlers.Accounts.Commands.RefreshToken;
 using Business.Handlers.Accounts.Commands.Register;
+using Business.Handlers.Accounts.Commands.RegisterFirebaseToken;
 using Business.Handlers.Accounts.Commands.ResetPassword;
 using Business.Handlers.Accounts.Commands.ResetTwoFactor;
 using Business.Handlers.Accounts.Commands.SetupTwoFactor;
@@ -131,6 +132,21 @@ public class AccountController : BaseApiController
         return result.Success ? Ok(result) : BadRequest(result.Messages);
     }
 
+    /// <summary>
+    /// Register firebase token operation
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns> 
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpPost("register-firebase-token")]
+    public async Task<IActionResult> RegisterFirebaseToken([FromBody] RegisterFirebaseTokenCommandRequest request)
+    {
+        var result = await Mediator.Send(request);
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
 
     /// <summary>
     /// Update device information operation

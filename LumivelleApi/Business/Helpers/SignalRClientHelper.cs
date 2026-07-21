@@ -9,7 +9,7 @@ namespace Business.Helpers;
 public interface ISignalRClientHelper
 {
     Task SendToAllAsync(string method, object message);
-    Task SendToUserAsync(string username, string method, object message);
+    Task SendToUserAsync(string email, string method, object message);
     Task SendToGroupAsync(string groupName, string method, object message);
     Task AddToGroupAsync(string connectionId, string groupName);
     Task RemoveFromGroupAsync(string connectionId, string groupName);
@@ -30,15 +30,15 @@ public class SignalRClientHelper(IHubContext<TulparHub> hubContext, MongoDbLogge
         }
     }
 
-    public async Task SendToUserAsync(string username, string method, object message)
+    public async Task SendToUserAsync(string email, string method, object message)
     {
         try
         {
             
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(email))
                 return;
 
-            var user = AccountConnectionHelper.GetAccountByUsername(username); 
+            var user = AccountConnectionHelper.GetAccountByUsername(email); 
             if (user == null)
                 return;
 
@@ -49,7 +49,7 @@ public class SignalRClientHelper(IHubContext<TulparHub> hubContext, MongoDbLogge
         }
         catch (Exception ex)
         {
-            logger.Error($"An error occurred while sending message to user '{username}' using method '{method}'", ex);
+            logger.Error($"An error occurred while sending message to user '{email}' using method '{method}'", ex);
         }
     }
 

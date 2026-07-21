@@ -9,7 +9,7 @@ public class LoginValidator : AbstractValidator<LoginCommandRequest>
 {
     public LoginValidator()
     {
-        RuleFor(m => m.Username).NotEmpty().WithMessage(Messages.UsernameEmpty);
+        RuleFor(m => m.Email).EmailAddress().WithMessage(Messages.InvalidEmail);
         RuleFor(m => m.Password).Password();
         RuleFor(m => m.DeviceId).NotEmpty().WithMessage(Messages.DeviceIdEmpty); 
     }
@@ -19,7 +19,7 @@ public class AdminLoginValidator : AbstractValidator<AdminLoginCommandRequest>
 {
     public AdminLoginValidator()
     {
-        RuleFor(m => m.Username).NotEmpty().WithMessage(Messages.UsernameEmpty);
+        RuleFor(m => m.Email).EmailAddress().WithMessage(Messages.InvalidEmail);
         RuleFor(m => m.Password).Password();
     }
 }

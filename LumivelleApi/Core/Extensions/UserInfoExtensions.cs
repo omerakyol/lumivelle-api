@@ -19,11 +19,11 @@ public static class UserInfoExtensions
         return accountId != null ? ObjectId.Parse(accountId) : ObjectId.Empty;
     }
 
-    public static string GetUsername()
+    public static string GetAccountEmail()
     {
         var httpContext = HttpContextAccessor.HttpContext;
-        var username = httpContext?.User.FindFirst(ClaimExtensions.NameUniqueIdentifier)?.Value;
-        return username;
+        var email = httpContext?.User.FindFirst(ClaimExtensions.NameUniqueIdentifier)?.Value;
+        return email;
     }
 
     public static AccountType? GetAccountType()

@@ -9,7 +9,7 @@ public class CreateAccountCommandRequest : IRequest<IDataResult<CreateAccountCom
     public string? LicenseCode { get; set; }
     public AccountType? AccountType { get; set; }
     public string? TransactionId { get; set; }
-    public string Username { get; set; }
+    public string Email { get; set; }
     public string Password { get; set; }
     public string ConfirmPassword { get; set; }
 }

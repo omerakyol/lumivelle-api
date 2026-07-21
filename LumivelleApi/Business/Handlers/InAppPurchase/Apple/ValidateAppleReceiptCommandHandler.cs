@@ -16,7 +16,7 @@ namespace Business.Handlers.InAppPurchase.Apple;
 public class ValidateAppleReceiptCommandRequest : IRequest<IResult>
 {
     public string ReceiptData { get; set; }
-    public string Username { get; set; }
+    public string Email { get; set; }
     public string DeviceId { get; set; }
 }
 
@@ -25,7 +25,7 @@ public class ValidateAppleReceiptValidator : AbstractValidator<ValidateAppleRece
     public ValidateAppleReceiptValidator()
     {
         RuleFor(m => m.ReceiptData).NotEmpty().WithMessage(Messages.ReceiptDataEmpty);
-        RuleFor(m => m.Username).NotEmpty().WithMessage(Messages.UsernameEmpty);
+        RuleFor(m => m.Email).EmailAddress().WithMessage(Messages.InvalidEmail);
         RuleFor(m => m.DeviceId).NotEmpty().WithMessage(Messages.DeviceIdEmpty);
     }
 }
@@ -40,7 +40,7 @@ public class ValidateAppleReceiptCommandHandler(
     public async Task<IResult> Handle(ValidateAppleReceiptCommandRequest request, CancellationToken cancellationToken)
     {
         var account = await accountRepository.GetAsync(x =>
-            x.Username == request.Username && x.AccountStatus == AccountStatus.Active);
+            x.Email == request.Email && x.AccountStatus == AccountStatus.Active);
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 

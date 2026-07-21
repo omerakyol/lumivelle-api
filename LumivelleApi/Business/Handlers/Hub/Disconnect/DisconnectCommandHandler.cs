@@ -20,16 +20,16 @@ public class DisconnectCommandHandler(
 {
     public async Task<IResult> Handle(DisconnectCommandRequest request, CancellationToken cancellationToken)
     {
-        var username = UserInfoExtensions.GetUsername();
+        var email = UserInfoExtensions.GetAccountEmail();
 
         var accounts = await accountRepository.GetListAsync(x =>
-            x.Username != username &&
+            x.Email != email &&
             x.AccountStatus == AccountStatus.Active
         );
 
         foreach (var account in accounts)
         {
-            await signalRClientHelper.SendToUserAsync(account.Username, "user_offline", new { username });
+            await signalRClientHelper.SendToUserAsync(account.Email, "user_offline", new { email });
         }
 
         return new SuccessResult();

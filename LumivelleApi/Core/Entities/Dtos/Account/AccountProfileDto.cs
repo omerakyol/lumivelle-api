@@ -9,8 +9,7 @@ public class AccountProfileDto
     [JsonIgnore] public ObjectId Id { get; set; }
     public string AccountId => Id.ToString();
 
-    public string Username { get; set; }
-    public string ProfileQrCodeLink => GenerateQrCodeHelper.Generate(Username);
+    public string ProfileQrCodeLink => GenerateQrCodeHelper.Generate(Email);
 
     public string Email { get; set; }
     public string Phone { get; set; }

@@ -14,7 +14,6 @@ using MediatR;
 namespace Business.Handlers.Accounts.Commands.CreateAccount;
 
 public class CreateAccountCommandHandler(
-    IMediator mediator,
     IAccountRepository accountRepository)
     : IRequestHandler<CreateAccountCommandRequest, IDataResult<CreateAccountCommandResult>>
 {
@@ -24,7 +23,7 @@ public class CreateAccountCommandHandler(
         CancellationToken cancellationToken)
     {
         var hasAlreadyAccount =
-            accountRepository.Any(x => x.Username == request.Username);
+            accountRepository.Any(x => x.Email == request.Email);
         if (hasAlreadyAccount)
             throw new ApplicationException(Messages.AccountAlreadyHave);
 
@@ -38,7 +37,7 @@ public class CreateAccountCommandHandler(
             var account = new Account
             {
                 AccountType = AccountType.User,
-                Username = request.Username,
+                Email = request.Email,
                 AccountStatus = AccountStatus.Active,
                 Password = hashedPassword
             };
@@ -56,7 +55,7 @@ public class CreateAccountCommandHandler(
             var account = new Account
             {
                 AccountType = AccountType.Admin,
-                Username = request.Username,
+                Email = request.Email,
                 AccountStatus = AccountStatus.Active,
                 Password = hashedPassword
             };

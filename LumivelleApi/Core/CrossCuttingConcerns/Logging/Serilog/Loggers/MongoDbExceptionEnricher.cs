@@ -68,12 +68,12 @@ public class UserContextEnricher : ILogEventEnricher
                 propertyFactory.CreateProperty("UserId", userId));
         }
 
-        // Username
-        var username = httpContext.User?.Identity?.Name;
-        if (!string.IsNullOrEmpty(username))
+        // Email
+        var email = httpContext.User?.Identity?.Name;
+        if (!string.IsNullOrEmpty(email))
         {
             logEvent.AddPropertyIfAbsent(
-                propertyFactory.CreateProperty("Username", username));
+                propertyFactory.CreateProperty("Email", email));
         }
 
         // IP Address 

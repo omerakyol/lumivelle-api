@@ -12,9 +12,8 @@ public class AccountDetailDto
 
     public AccountStatus AccountStatus { get; set; }
     public AccountType AccountType { get; set; }
-    public string Username { get; set; } 
     public string Email { get; set; }
-    public string Phone { get; set; } 
+    public string Phone { get; set; }
     public string Language { get; set; }
     public bool EnablePushNotifications { get; set; }
     public string PhotoUrl { get; set; }

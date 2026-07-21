@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic; 
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +42,7 @@ public class GetAccountsQuery : PaginationFilter, IRequest<PaginatedResult<List<
 
             Expression<Func<Account, bool>> filter = x =>
                 (request.Query == null ||
-                 x.Username.Contains(request.Query, StringComparison.CurrentCultureIgnoreCase)) &&
+                 x.Email.Contains(request.Query, StringComparison.CurrentCultureIgnoreCase)) &&
                 (request.StartDate == null || x.CreatedAt > request.StartDate) &&
                 (request.EndDate == null || x.CreatedAt < request.EndDate) &&
                 (request.AccountType == null || x.AccountType == request.AccountType) &&

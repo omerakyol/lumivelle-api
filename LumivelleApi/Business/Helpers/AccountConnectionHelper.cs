@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Core.Entities.Dtos.Hub;
 
 namespace Business.Helpers;
@@ -8,10 +7,10 @@ namespace Business.Helpers;
 public static class AccountConnectionHelper
 {
     private static readonly List<ConnectedAccountDto> Accounts = [];
-     
-    public static void AddAccount(string connectionId, string username)
+
+    public static void AddAccount(string connectionId, string email)
     {
-        var oldAccounts = Accounts.Where(x => x.Username == username).ToList();
+        var oldAccounts = Accounts.Where(x => x.Email == email).ToList();
         if (oldAccounts.Count > 0)
             foreach (var oldAccount in oldAccounts)
                 Accounts.Remove(oldAccount);
@@ -19,7 +18,7 @@ public static class AccountConnectionHelper
         Accounts.Add(new ConnectedAccountDto
         {
             ConnectionId = connectionId,
-            Username = username
+            Email = email
         });
     }
 
@@ -35,9 +34,9 @@ public static class AccountConnectionHelper
         return Accounts.FirstOrDefault(u => u.ConnectionId == connectionId);
     }
 
-    public static ConnectedAccountDto GetAccountByUsername(string username)
+    public static ConnectedAccountDto GetAccountByUsername(string email)
     {
-        return Accounts.FirstOrDefault(u => u.Username == username);
+        return Accounts.FirstOrDefault(u => u.Email == email);
     }
 
     public static List<ConnectedAccountDto> GetAllAccounts()

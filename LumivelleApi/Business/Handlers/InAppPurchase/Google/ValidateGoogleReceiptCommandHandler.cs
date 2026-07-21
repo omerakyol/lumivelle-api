@@ -19,7 +19,7 @@ public class ValidateGoogleReceiptCommandRequest : IRequest<IResult>
     public string PackageName { get; set; }
     public string ProductId { get; set; }
     public string PurchaseToken { get; set; }
-    public string Username { get; set; }
+    public string Email { get; set; }
     public string DeviceId { get; set; }
 }
 
@@ -30,7 +30,7 @@ public class ValidateGoogleReceiptValidator : AbstractValidator<ValidateGoogleRe
         RuleFor(m => m.PackageName).NotEmpty().WithMessage(Messages.PackageNameEmpty);
         RuleFor(m => m.ProductId).NotEmpty().WithMessage(Messages.ProductIdEmpty);
         RuleFor(m => m.PurchaseToken).NotEmpty().WithMessage(Messages.PurchaseTokenEmpty);
-        RuleFor(m => m.Username).NotEmpty().WithMessage(Messages.UsernameEmpty);
+        RuleFor(m => m.Email).EmailAddress().WithMessage(Messages.InvalidEmail);
         RuleFor(m => m.DeviceId).NotEmpty().WithMessage(Messages.DeviceIdEmpty);
     }
 }
@@ -45,7 +45,7 @@ public class ValidateGoogleReceiptCommandHandler(
     public async Task<IResult> Handle(ValidateGoogleReceiptCommandRequest request, CancellationToken cancellationToken)
     {
         var account = await accountRepository.GetAsync(x =>
-            x.Username == request.Username && x.AccountStatus == AccountStatus.Active);
+            x.Email == request.Email && x.AccountStatus == AccountStatus.Active);
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 

@@ -1,6 +1,5 @@
 using System;
-using Autofac.Extensions.DependencyInjection;
-using Business.Hub;
+using Autofac.Extensions.DependencyInjection; 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -35,6 +34,8 @@ public static class Program
                 webBuilder
                     .UseKestrel(options =>
                     {
+                        options.ListenAnyIP(5001);
+                        
                         // Max upload size (example: 500 MB)
                         options.Limits.MaxRequestBodySize = 500 * 1024 * 1024;
 

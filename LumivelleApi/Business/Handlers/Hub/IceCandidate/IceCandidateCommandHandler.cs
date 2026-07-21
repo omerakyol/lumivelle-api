@@ -9,7 +9,7 @@ namespace Business.Handlers.Hub.IceCandidate;
 
 public class IceCandidateCommandRequest : IRequest<IResult>
 {
-    public string TargetUsername { get; set; }
+    public string TargetEmail { get; set; }
     public string Candidate { get; set; }
 }
 
@@ -19,10 +19,10 @@ public class IceCandidateCommandHandler(
 {
     public async Task<IResult> Handle(IceCandidateCommandRequest request, CancellationToken cancellationToken)
     {
-        var currentUsername = UserInfoExtensions.GetUsername();
+        var email = UserInfoExtensions.GetAccountEmail();
 
-        await signalRClientHelper.SendToUserAsync(request.TargetUsername, "ice_candidate",
-            new { callerUsername = currentUsername, candidate = request.Candidate });
+        await signalRClientHelper.SendToUserAsync(request.TargetEmail, "ice_candidate",
+            new { callerEmail = email, candidate = request.Candidate });
 
         return new SuccessResult();
     }
