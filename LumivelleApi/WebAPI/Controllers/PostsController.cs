@@ -5,6 +5,8 @@ using Business.Handlers.Posts.Queries.GetFeed;
 using Business.Handlers.Posts.Queries.GetMyPosts;
 using Business.Handlers.Posts.Queries.GetPost;
 using Business.Handlers.Posts.Queries.GetSavedPosts;
+using Business.Handlers.Posts.Commands.ToggleLike;
+using Business.Handlers.Posts.Commands.ToggleSave;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -57,5 +59,19 @@ public class PostsController : BaseApiController
     public async Task<IActionResult> GetSavedPosts([FromQuery] string cursor = null)
     {
         return GetResponse(await Mediator.Send(new GetSavedPostsQueryRequest { Cursor = cursor }));
+    }
+
+    /// <summary>Toggle like on a post</summary>
+    [HttpPost("{id}/like")]
+    public async Task<IActionResult> ToggleLike([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new ToggleLikeCommandRequest { PostId = id }));
+    }
+
+    /// <summary>Toggle save on a post</summary>
+    [HttpPost("{id}/save")]
+    public async Task<IActionResult> ToggleSave([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new ToggleSaveCommandRequest { PostId = id }));
     }
 }
