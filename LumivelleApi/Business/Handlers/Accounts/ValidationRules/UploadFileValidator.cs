@@ -8,7 +8,7 @@ namespace Business.Handlers.Accounts.ValidationRules;
 public class UploadFileValidator : AbstractValidator<UploadFileCommandRequest>
 {
     // Allowed MIME types
-    private readonly string[] _allowedMimeTypes =
+    public static readonly string[] AllowedMimeTypes =
     [
         // Most common formats (SVG intentionally excluded: it can carry
         // executable script and is served from /media — stored-XSS risk).
@@ -68,7 +68,7 @@ public class UploadFileValidator : AbstractValidator<UploadFileCommandRequest>
         RuleFor(x => x.File)
             .NotNull().WithMessage(Messages.FileEmpty)
             .Must(file => file.Length > 0).WithMessage(Messages.FileEmpty)
-            .Must(file => _allowedMimeTypes.Contains(file.ContentType.ToLower()))
+            .Must(file => AllowedMimeTypes.Contains(file.ContentType.ToLower()))
             .WithMessage(Messages.FileTypeNotAllowed);
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Business.Handlers.Accounts.Commands.UploadFile;
+using Business.Handlers.Media.Commands.UploadBatch;
 using Core.Utilities.Results;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,6 +37,20 @@ public class MediaController : BaseApiController
     {
         var result = await Mediator.Send(new UploadFileCommandRequest
             { File = file, FolderPath = _mediaFolder });
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>Upload up to 6 images at once (post photos) and get back their public URLs, in order</summary>
+    [Consumes("multipart/form-data")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<UploadBatchCommandResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [RequestSizeLimit(48_000_000)]
+    [HttpPost("upload-batch")]
+    public async Task<IActionResult> UploadBatch(List<IFormFile> files)
+    {
+        var result = await Mediator.Send(new UploadBatchCommandRequest
+            { Files = files, FolderPath = _mediaFolder });
         return result.Success ? Ok(result) : BadRequest(result.Messages);
     }
 }
