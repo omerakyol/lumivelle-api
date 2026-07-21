@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using Business.Handlers.Posts.Commands.CreatePost;
 using Business.Handlers.Posts.Commands.DeletePost;
+using Business.Handlers.Posts.Queries.GetFeed;
+using Business.Handlers.Posts.Queries.GetPost;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -25,5 +27,19 @@ public class PostsController : BaseApiController
     {
         var result = await Mediator.Send(new DeletePostCommandRequest { Id = id });
         return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    /// <summary>Reverse-chronological feed of every user's posts</summary>
+    [HttpGet]
+    public async Task<IActionResult> GetFeed([FromQuery] string cursor = null)
+    {
+        return GetResponse(await Mediator.Send(new GetFeedQueryRequest { Cursor = cursor }));
+    }
+
+    /// <summary>Get a single post</summary>
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetPost([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new GetPostQueryRequest { Id = id }));
     }
 }
