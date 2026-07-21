@@ -15,6 +15,7 @@ using Business.Handlers.Accounts.Commands.UpdateDeviceInformation;
 using Business.Handlers.Accounts.Commands.UploadProfilePicture;
 using Business.Handlers.Accounts.Commands.VerifyTwoFactor;
 using Business.Handlers.Accounts.Queries.GetAccountProfile;
+using Business.Handlers.Accounts.Queries.GetAccountPublicProfile;
 using Core.Entities.Dtos.Account;
 using Core.Utilities.Results;
 using Microsoft.AspNetCore.Authorization;
@@ -281,5 +282,12 @@ public class AccountController : BaseApiController
         var result = await Mediator.Send(new UploadProfilePictureCommandRequest
             { File = file, FolderPath = _mediaFolder });
         return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>Get another account's public display info (name, avatar) for use in feed/comment authorship</summary>
+    [HttpGet("{id}/public-profile")]
+    public async Task<IActionResult> GetPublicProfile([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new GetAccountPublicProfileQueryRequest { Id = id }));
     }
 }
