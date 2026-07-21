@@ -37,7 +37,7 @@ public class JwtHelper : ITokenHelper
     public TAccessToken CreateToken<TAccessToken>(Account account)
         where TAccessToken : IAccessToken, new()
     {
-        _accessTokenExpiration = DateTime.UtcNow.AddMinutes(_tokenOptions.AccessTokenExpiration);
+        _accessTokenExpiration = DateTime.UtcNow.AddDays(_tokenOptions.AccessTokenExpiration);
         var securityKey = SecurityKeyHelper.CreateSecurityKey(_tokenOptions.SecurityKey);
         var signingCredentials = SigningCredentialsHelper.CreateSigningCredentials(securityKey);
         var jwt = CreateJwtSecurityToken(_tokenOptions, account, signingCredentials);
