@@ -7,6 +7,8 @@ using Business.Handlers.Posts.Queries.GetPost;
 using Business.Handlers.Posts.Queries.GetSavedPosts;
 using Business.Handlers.Posts.Commands.ToggleLike;
 using Business.Handlers.Posts.Commands.ToggleSave;
+using Business.Handlers.Comments.Commands.CreateComment;
+using Business.Handlers.Comments.Queries.GetComments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -73,5 +75,20 @@ public class PostsController : BaseApiController
     public async Task<IActionResult> ToggleSave([FromRoute] string id)
     {
         return GetResponse(await Mediator.Send(new ToggleSaveCommandRequest { PostId = id }));
+    }
+
+    /// <summary>List a post's comments, oldest first</summary>
+    [HttpGet("{id}/comments")]
+    public async Task<IActionResult> GetComments([FromRoute] string id, [FromQuery] string cursor = null)
+    {
+        return GetResponse(await Mediator.Send(new GetCommentsQueryRequest { PostId = id, Cursor = cursor }));
+    }
+
+    /// <summary>Add a comment to a post</summary>
+    [HttpPost("{id}/comments")]
+    public async Task<IActionResult> CreateComment([FromRoute] string id, [FromBody] CreateCommentCommandRequest request)
+    {
+        request.PostId = id;
+        return GetResponse(await Mediator.Send(request));
     }
 }
