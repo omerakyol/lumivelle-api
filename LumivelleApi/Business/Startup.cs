@@ -100,6 +100,10 @@ public partial class BusinessStartup(IConfiguration configuration, IHostEnvironm
         services.AddScoped<IOutfitRepository, OutfitRepository>();
         services.AddScoped<IDailyRecommendationRepository, DailyRecommendationRepository>();
         services.AddScoped<IStylePreferenceRepository, StylePreferenceRepository>();
+        services.AddScoped<IPostRepository, PostRepository>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<IPostLikeRepository, PostLikeRepository>();
+        services.AddScoped<ISavedPostRepository, SavedPostRepository>();
 
         services.AddHttpClient("claude", client => client.Timeout = TimeSpan.FromSeconds(60));
         services.AddScoped<IClaudeVisionService, ClaudeVisionService>();
