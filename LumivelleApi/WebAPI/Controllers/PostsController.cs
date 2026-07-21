@@ -1,15 +1,21 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Business.Handlers.Comments;
+using Business.Handlers.Comments.Commands.CreateComment;
+using Business.Handlers.Comments.Queries.GetComments;
+using Business.Handlers.Posts;
 using Business.Handlers.Posts.Commands.CreatePost;
 using Business.Handlers.Posts.Commands.DeletePost;
+using Business.Handlers.Posts.Commands.ToggleLike;
+using Business.Handlers.Posts.Commands.ToggleSave;
 using Business.Handlers.Posts.Queries.GetFeed;
 using Business.Handlers.Posts.Queries.GetMyPosts;
 using Business.Handlers.Posts.Queries.GetPost;
 using Business.Handlers.Posts.Queries.GetSavedPosts;
-using Business.Handlers.Posts.Commands.ToggleLike;
-using Business.Handlers.Posts.Commands.ToggleSave;
-using Business.Handlers.Comments.Commands.CreateComment;
-using Business.Handlers.Comments.Queries.GetComments;
+using Core.Utilities.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using IResult = Core.Utilities.Results.IResult;
 
 namespace WebAPI.Controllers;
 
@@ -21,6 +27,10 @@ namespace WebAPI.Controllers;
 public class PostsController : BaseApiController
 {
     /// <summary>Create a post</summary>
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<PostResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostCommandRequest request)
     {
@@ -28,6 +38,9 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>Delete a post (owner only) — cascades to its comments, likes and saves</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletePost([FromRoute] string id)
     {
@@ -36,6 +49,9 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>Reverse-chronological feed of every user's posts</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<FeedPageResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet]
     public async Task<IActionResult> GetFeed([FromQuery] string cursor = null)
     {
@@ -43,6 +59,9 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>Get a single post</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<PostResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPost([FromRoute] string id)
     {
@@ -50,6 +69,9 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>The current user's own posts, newest first</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<FeedPageResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("mine")]
     public async Task<IActionResult> GetMyPosts([FromQuery] string cursor = null)
     {
@@ -57,6 +79,9 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>Posts the current user has saved, newest-saved first</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<FeedPageResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("saved")]
     public async Task<IActionResult> GetSavedPosts([FromQuery] string cursor = null)
     {
@@ -64,6 +89,9 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>Toggle like on a post</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<ToggleLikeResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("{id}/like")]
     public async Task<IActionResult> ToggleLike([FromRoute] string id)
     {
@@ -71,6 +99,9 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>Toggle save on a post</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<ToggleSaveResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("{id}/save")]
     public async Task<IActionResult> ToggleSave([FromRoute] string id)
     {
@@ -78,6 +109,9 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>List a post's comments, oldest first</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<CommentPageResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("{id}/comments")]
     public async Task<IActionResult> GetComments([FromRoute] string id, [FromQuery] string cursor = null)
     {
@@ -85,6 +119,10 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>Add a comment to a post</summary>
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<CommentResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("{id}/comments")]
     public async Task<IActionResult> CreateComment([FromRoute] string id, [FromBody] CreateCommentCommandRequest request)
     {

@@ -285,6 +285,9 @@ public class AccountController : BaseApiController
     }
 
     /// <summary>Get another account's public display info (name, avatar) for use in feed/comment authorship</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<AccountPublicProfileResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet("{id}/public-profile")]
     public async Task<IActionResult> GetPublicProfile([FromRoute] string id)
     {
