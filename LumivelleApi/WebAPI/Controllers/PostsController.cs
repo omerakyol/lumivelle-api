@@ -2,7 +2,9 @@ using System.Threading.Tasks;
 using Business.Handlers.Posts.Commands.CreatePost;
 using Business.Handlers.Posts.Commands.DeletePost;
 using Business.Handlers.Posts.Queries.GetFeed;
+using Business.Handlers.Posts.Queries.GetMyPosts;
 using Business.Handlers.Posts.Queries.GetPost;
+using Business.Handlers.Posts.Queries.GetSavedPosts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -41,5 +43,19 @@ public class PostsController : BaseApiController
     public async Task<IActionResult> GetPost([FromRoute] string id)
     {
         return GetResponse(await Mediator.Send(new GetPostQueryRequest { Id = id }));
+    }
+
+    /// <summary>The current user's own posts, newest first</summary>
+    [HttpGet("mine")]
+    public async Task<IActionResult> GetMyPosts([FromQuery] string cursor = null)
+    {
+        return GetResponse(await Mediator.Send(new GetMyPostsQueryRequest { Cursor = cursor }));
+    }
+
+    /// <summary>Posts the current user has saved, newest-saved first</summary>
+    [HttpGet("saved")]
+    public async Task<IActionResult> GetSavedPosts([FromQuery] string cursor = null)
+    {
+        return GetResponse(await Mediator.Send(new GetSavedPostsQueryRequest { Cursor = cursor }));
     }
 }
