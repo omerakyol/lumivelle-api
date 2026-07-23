@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Business.Handlers.Collections;
 using Business.Handlers.Collections.Commands.CreateCollection;
 using Business.Handlers.Collections.Commands.DeleteCollection;
+using Business.Handlers.Collections.Queries.GetCollections;
 using Core.Utilities.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -37,5 +38,15 @@ public class CollectionsController : BaseApiController
     {
         var result = await Mediator.Send(new DeleteCollectionCommandRequest { Id = id });
         return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    /// <summary>List the caller's collections, always led by the synthesized default "All saved" bucket</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<List<CollectionResult>>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet]
+    public async Task<IActionResult> GetCollections()
+    {
+        return GetResponse(await Mediator.Send(new GetCollectionsQueryRequest()));
     }
 }
