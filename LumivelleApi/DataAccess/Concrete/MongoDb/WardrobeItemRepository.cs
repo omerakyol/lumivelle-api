@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.DataAccess.MongoDb.Concrete;
 using Core.Enums;
@@ -27,5 +28,17 @@ public class WardrobeItemRepository
             filter &= Builders<WardrobeItemDocument>.Filter.Eq(x => x.Category, category);
 
         return await _collection.Find(filter).SortByDescending(x => x.CreatedAt).ToListAsync();
+    }
+
+    public async Task<List<WardrobeItemDocument>> GetByIdsAsync(IEnumerable<ObjectId> ids)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0)
+            return [];
+
+        var filter = Builders<WardrobeItemDocument>.Filter.In(x => x.Id, idList)
+            & Builders<WardrobeItemDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+
+        return await _collection.Find(filter).ToListAsync();
     }
 }

@@ -10,4 +10,5 @@ public interface IOutfitRepository : IDocumentDbRepository<OutfitDocument>
 {
     Task<List<OutfitDocument>> GetByAccountIdAsync(ObjectId accountId);
     Task<int> CountByItemIdAsync(ObjectId accountId, ObjectId itemId);
+    Task<List<OutfitDocument>> GetByIdsAsync(IEnumerable<ObjectId> ids);
 }

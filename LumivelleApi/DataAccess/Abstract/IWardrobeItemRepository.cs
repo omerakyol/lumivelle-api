@@ -9,4 +9,5 @@ namespace DataAccess.Abstract;
 public interface IWardrobeItemRepository : IDocumentDbRepository<WardrobeItemDocument>
 {
     Task<List<WardrobeItemDocument>> GetByAccountIdAsync(ObjectId accountId, string category);
+    Task<List<WardrobeItemDocument>> GetByIdsAsync(IEnumerable<ObjectId> ids);
 }

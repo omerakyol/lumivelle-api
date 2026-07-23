@@ -48,14 +48,14 @@ public class PostsController : BaseApiController
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
-    /// <summary>Reverse-chronological feed of every user's posts</summary>
+    /// <summary>Reverse-chronological feed of every user's posts, optionally filtered by tagged wardrobe category</summary>
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<FeedPageResult>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpGet]
-    public async Task<IActionResult> GetFeed([FromQuery] string cursor = null)
+    public async Task<IActionResult> GetFeed([FromQuery] string cursor = null, [FromQuery] string category = null)
     {
-        return GetResponse(await Mediator.Send(new GetFeedQueryRequest { Cursor = cursor }));
+        return GetResponse(await Mediator.Send(new GetFeedQueryRequest { Cursor = cursor, Category = category }));
     }
 
     /// <summary>Get a single post</summary>

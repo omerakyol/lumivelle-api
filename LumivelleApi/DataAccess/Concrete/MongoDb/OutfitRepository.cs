@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.DataAccess.MongoDb.Concrete;
 using Core.Enums;
@@ -32,5 +33,17 @@ public class OutfitRepository : MongoDbRepositoryBase<OutfitDocument>, IOutfitRe
             & Builders<OutfitDocument>.Filter.AnyEq(x => x.ItemIds, itemId);
 
         return (int)await _collection.CountDocumentsAsync(filter);
+    }
+
+    public async Task<List<OutfitDocument>> GetByIdsAsync(IEnumerable<ObjectId> ids)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0)
+            return [];
+
+        var filter = Builders<OutfitDocument>.Filter.In(x => x.Id, idList)
+            & Builders<OutfitDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+
+        return await _collection.Find(filter).ToListAsync();
     }
 }
