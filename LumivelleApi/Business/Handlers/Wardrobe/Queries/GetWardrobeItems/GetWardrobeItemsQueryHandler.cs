@@ -21,7 +21,7 @@ public class GetWardrobeItemsQueryHandler(IWardrobeItemRepository wardrobeItemRe
         var accountId = UserInfoExtensions.GetAccountId();
         var documents = await wardrobeItemRepository.GetByAccountIdAsync(accountId, request.Category);
 
-        var results = documents.Select(WardrobeItemResult.FromDocument).ToList();
+        var results = documents.Select(d => WardrobeItemResult.FromDocument(d)).ToList();
 
         return new SuccessDataResult<List<WardrobeItemResult>>(results);
     }

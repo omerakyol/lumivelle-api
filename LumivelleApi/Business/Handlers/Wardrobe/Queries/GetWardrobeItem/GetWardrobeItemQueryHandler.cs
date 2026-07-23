@@ -9,7 +9,9 @@ using MongoDB.Bson;
 
 namespace Business.Handlers.Wardrobe.Queries.GetWardrobeItem;
 
-public class GetWardrobeItemQueryHandler(IWardrobeItemRepository wardrobeItemRepository)
+public class GetWardrobeItemQueryHandler(
+    IWardrobeItemRepository wardrobeItemRepository,
+    IOutfitRepository outfitRepository)
     : IRequestHandler<GetWardrobeItemQueryRequest, IDataResult<WardrobeItemResult>>
 {
     [SecuredOperation(Priority = 1)]
@@ -25,6 +27,9 @@ public class GetWardrobeItemQueryHandler(IWardrobeItemRepository wardrobeItemRep
             return new ErrorDataResult<WardrobeItemResult>(
                 new ResultMessage { Code = "NOT_FOUND", Description = "Item not found" });
 
-        return new SuccessDataResult<WardrobeItemResult>(WardrobeItemResult.FromDocument(document));
+        var outfitCount = await outfitRepository.CountByItemIdAsync(accountId, itemId);
+
+        return new SuccessDataResult<WardrobeItemResult>(
+            WardrobeItemResult.FromDocument(document, outfitCount));
     }
 }

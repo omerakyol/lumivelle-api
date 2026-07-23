@@ -48,7 +48,7 @@ public class CreateOutfitCommandHandler(
         {
             Id = document.Id.ToString(),
             Name = document.Name,
-            Items = ownedItems.Select(WardrobeItemResult.FromDocument).ToList(),
+            Items = ownedItems.Select(i => WardrobeItemResult.FromDocument(i)).ToList(),
             CreatedAt = document.CreatedAt
         };
 

@@ -16,6 +16,7 @@ public class WardrobeItemResult
     public int WearCount { get; set; }
     public DateTime? LastWornAt { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int OutfitCount { get; set; }
 
     public static WardrobeItemResult FromDocument(WardrobeItemDocument document)
     {
@@ -31,7 +32,15 @@ public class WardrobeItemResult
             IsFavorite = document.IsFavorite,
             WearCount = document.WearCount,
             LastWornAt = document.LastWornAt,
-            CreatedAt = document.CreatedAt
+            CreatedAt = document.CreatedAt,
+            OutfitCount = 0
         };
+    }
+
+    public static WardrobeItemResult FromDocument(WardrobeItemDocument document, int outfitCount)
+    {
+        var result = FromDocument(document);
+        result.OutfitCount = outfitCount;
+        return result;
     }
 }

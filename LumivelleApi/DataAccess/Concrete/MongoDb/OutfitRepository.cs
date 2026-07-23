@@ -24,4 +24,13 @@ public class OutfitRepository : MongoDbRepositoryBase<OutfitDocument>, IOutfitRe
 
         return await _collection.Find(filter).SortByDescending(x => x.CreatedAt).ToListAsync();
     }
+
+    public async Task<int> CountByItemIdAsync(ObjectId accountId, ObjectId itemId)
+    {
+        var filter = Builders<OutfitDocument>.Filter.Eq(x => x.AccountId, accountId)
+            & Builders<OutfitDocument>.Filter.Eq(x => x.Status, EntityStatus.Active)
+            & Builders<OutfitDocument>.Filter.AnyEq(x => x.ItemIds, itemId);
+
+        return (int)await _collection.CountDocumentsAsync(filter);
+    }
 }
