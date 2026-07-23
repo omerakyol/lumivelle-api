@@ -9,6 +9,7 @@ using Business.Handlers.Wardrobe.Commands.ToggleFavorite;
 using Business.Handlers.Wardrobe.Commands.UpdateWardrobeItem;
 using Business.Handlers.Wardrobe.Queries.GetOutfitSuggestions;
 using Business.Handlers.Wardrobe.Queries.GetPaletteGaps;
+using Business.Handlers.Wardrobe.Queries.GetWardrobeAnalytics;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeItem;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeItems;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeStats;
@@ -140,5 +141,15 @@ public class WardrobeController : BaseApiController
     public async Task<IActionResult> GetOutfitSuggestions()
     {
         return GetResponse(await Mediator.Send(new GetOutfitSuggestionsQueryRequest()));
+    }
+
+    /// <summary>Wardrobe analytics: palette alignment, most-worn colors, style distribution, seasonal usage</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<WardrobeAnalyticsResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("analytics")]
+    public async Task<IActionResult> GetAnalytics()
+    {
+        return GetResponse(await Mediator.Send(new GetWardrobeAnalyticsQueryRequest()));
     }
 }

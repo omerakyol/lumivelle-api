@@ -30,8 +30,10 @@ public static class PaletteMatching
             .Max();
     }
 
+    public const int CoverageThreshold = 60;
+
     public static bool IsColorCoveredByWardrobe(
-        string paletteColor, IEnumerable<string> wardrobeColors, int coverageThreshold = 60)
+        string paletteColor, IEnumerable<string> wardrobeColors, int coverageThreshold = CoverageThreshold)
     {
         return wardrobeColors.Any(c => ScoreColorPair(c, paletteColor) >= coverageThreshold);
     }
