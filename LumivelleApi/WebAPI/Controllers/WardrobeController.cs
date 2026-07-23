@@ -7,6 +7,7 @@ using Business.Handlers.Wardrobe.Commands.DeleteWardrobeItem;
 using Business.Handlers.Wardrobe.Commands.MarkWorn;
 using Business.Handlers.Wardrobe.Commands.ToggleFavorite;
 using Business.Handlers.Wardrobe.Commands.UpdateWardrobeItem;
+using Business.Handlers.Wardrobe.Queries.GetOutfitSuggestions;
 using Business.Handlers.Wardrobe.Queries.GetPaletteGaps;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeItem;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeItems;
@@ -129,5 +130,15 @@ public class WardrobeController : BaseApiController
     public async Task<IActionResult> GetStats()
     {
         return GetResponse(await Mediator.Send(new GetWardrobeStatsQueryRequest()));
+    }
+
+    /// <summary>Rule-based outfit combos generated from the caller's own wardrobe, ranked by palette match</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<OutfitSuggestionsResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("outfit-suggestions")]
+    public async Task<IActionResult> GetOutfitSuggestions()
+    {
+        return GetResponse(await Mediator.Send(new GetOutfitSuggestionsQueryRequest()));
     }
 }
