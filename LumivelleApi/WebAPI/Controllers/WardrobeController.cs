@@ -10,6 +10,7 @@ using Business.Handlers.Wardrobe.Commands.UpdateWardrobeItem;
 using Business.Handlers.Wardrobe.Queries.GetPaletteGaps;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeItem;
 using Business.Handlers.Wardrobe.Queries.GetWardrobeItems;
+using Business.Handlers.Wardrobe.Queries.GetWardrobeStats;
 using Core.Utilities.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -118,5 +119,15 @@ public class WardrobeController : BaseApiController
     public async Task<IActionResult> GetPaletteGaps()
     {
         return GetResponse(await Mediator.Send(new GetPaletteGapsQueryRequest()));
+    }
+
+    /// <summary>Wardrobe summary stats: item count, outfit count, average palette match</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<WardrobeStatsResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
+    {
+        return GetResponse(await Mediator.Send(new GetWardrobeStatsQueryRequest()));
     }
 }
