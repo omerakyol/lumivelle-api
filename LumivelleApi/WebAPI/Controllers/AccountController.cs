@@ -18,7 +18,9 @@ using Business.Handlers.Accounts.Commands.UploadProfilePicture;
 using Business.Handlers.Accounts.Commands.VerifyTwoFactor;
 using Business.Handlers.Accounts.Queries.GetAccountProfile;
 using Business.Handlers.Accounts.Queries.GetAccountPublicProfile;
+using Business.Handlers.Follows;
 using Business.Handlers.Follows.Commands.ToggleFollow;
+using Business.Handlers.Follows.Queries.GetCreatorProfile;
 using Core.Entities.Dtos.Account;
 using Core.Utilities.Results;
 using Microsoft.AspNetCore.Authorization;
@@ -330,5 +332,15 @@ public class AccountController : BaseApiController
     public async Task<IActionResult> ToggleFollow([FromRoute] string id)
     {
         return GetResponse(await Mediator.Send(new ToggleFollowCommandRequest { FolloweeId = id }));
+    }
+
+    /// <summary>Get a creator profile: name, bio, style tag, follower count, follow state</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<CreatorProfileResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("{id}/creator-profile")]
+    public async Task<IActionResult> GetCreatorProfile([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new GetCreatorProfileQueryRequest { Id = id }));
     }
 }
