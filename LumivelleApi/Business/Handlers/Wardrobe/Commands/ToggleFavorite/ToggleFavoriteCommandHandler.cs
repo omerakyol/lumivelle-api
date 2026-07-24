@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -12,7 +14,6 @@ namespace Business.Handlers.Wardrobe.Commands.ToggleFavorite;
 public class ToggleFavoriteCommandHandler(IWardrobeItemRepository wardrobeItemRepository)
     : IRequestHandler<ToggleFavoriteCommandRequest, IDataResult<WardrobeItemResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<WardrobeItemResult>> Handle(
         ToggleFavoriteCommandRequest request,
         CancellationToken cancellationToken)
@@ -22,8 +23,7 @@ public class ToggleFavoriteCommandHandler(IWardrobeItemRepository wardrobeItemRe
         var document = await wardrobeItemRepository.GetByIdAsync(itemId);
 
         if (document == null || document.AccountId != accountId)
-            return new ErrorDataResult<WardrobeItemResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Item not found" });
+            throw new ApplicationException(Messages.WardrobeItemNotFound);
 
         document.IsFavorite = !document.IsFavorite;
         await wardrobeItemRepository.UpdateAsync(document);

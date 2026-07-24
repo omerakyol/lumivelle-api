@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -17,7 +18,6 @@ public class ToggleLikeCommandHandler(
     IPostLikeRepository postLikeRepository)
     : IRequestHandler<ToggleLikeCommandRequest, IDataResult<ToggleLikeResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<ToggleLikeResult>> Handle(
         ToggleLikeCommandRequest request,
         CancellationToken cancellationToken)
@@ -27,8 +27,7 @@ public class ToggleLikeCommandHandler(
         var post = await postRepository.GetByIdAsync(postId);
 
         if (post == null)
-            return new ErrorDataResult<ToggleLikeResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Post not found" });
+            throw new ApplicationException(Messages.PostNotFound);
 
         var existing = await postLikeRepository.GetAsync(postId, accountId);
         bool isLiked;

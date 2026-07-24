@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -14,19 +16,17 @@ public class DeleteCollectionCommandHandler(
     ISavedPostRepository savedPostRepository)
     : IRequestHandler<DeleteCollectionCommandRequest, IResult>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IResult> Handle(DeleteCollectionCommandRequest request, CancellationToken cancellationToken)
     {
         if (request.Id == "all-saved")
-            return new ErrorResult(
-                new ResultMessage { Code = "CANNOT_DELETE_DEFAULT", Description = "The default collection can't be deleted" });
+            throw new ApplicationException(Messages.CannotDeleteDefaultCollection);
 
         var accountId = UserInfoExtensions.GetAccountId();
         var collectionId = ObjectId.Parse(request.Id);
         var document = await collectionRepository.GetByIdAsync(collectionId);
 
         if (document == null || document.AccountId != accountId)
-            return new ErrorResult(new ResultMessage { Code = "NOT_FOUND", Description = "Collection not found" });
+            throw new ApplicationException(Messages.CollectionNotFound);
 
         await savedPostRepository.ClearCollectionIdAsync(collectionId);
         await collectionRepository.DeleteAsync(collectionId);

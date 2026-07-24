@@ -1,7 +1,9 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Analysis;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -12,7 +14,6 @@ namespace Business.Handlers.Analysis.Queries.GetProfile;
 public class GetProfileQueryHandler(IBeautyProfileRepository beautyProfileRepository)
     : IRequestHandler<GetProfileQueryRequest, IDataResult<BeautyProfileResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<BeautyProfileResult>> Handle(
         GetProfileQueryRequest request,
         CancellationToken cancellationToken)
@@ -21,12 +22,7 @@ public class GetProfileQueryHandler(IBeautyProfileRepository beautyProfileReposi
         var profile = await beautyProfileRepository.GetLatestByAccountIdAsync(accountId);
 
         if (profile == null)
-            return new ErrorDataResult<BeautyProfileResult>(
-                new ResultMessage
-                {
-                    Code = "NOT_FOUND",
-                    Description = "Beauty profile not found"
-                });
+            throw new ApplicationException(Messages.BeautyProfileNotFound);
 
         return new SuccessDataResult<BeautyProfileResult>(BeautyProfileResult.FromDocument(profile));
     }

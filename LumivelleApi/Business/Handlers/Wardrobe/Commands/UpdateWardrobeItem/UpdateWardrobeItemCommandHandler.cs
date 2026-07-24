@@ -1,8 +1,10 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Wardrobe.ValidationRules;
 using Core.Aspects.Autofac.Validation;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -16,7 +18,6 @@ public class UpdateWardrobeItemCommandHandler(
     IBeautyProfileRepository beautyProfileRepository)
     : IRequestHandler<UpdateWardrobeItemCommandRequest, IDataResult<WardrobeItemResult>>
 {
-    [SecuredOperation(Priority = 1)]
     [ValidationAspect(typeof(UpdateWardrobeItemValidator), Priority = 2)]
     public async Task<IDataResult<WardrobeItemResult>> Handle(
         UpdateWardrobeItemCommandRequest request,
@@ -27,8 +28,7 @@ public class UpdateWardrobeItemCommandHandler(
         var document = await wardrobeItemRepository.GetByIdAsync(itemId);
 
         if (document == null || document.AccountId != accountId)
-            return new ErrorDataResult<WardrobeItemResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Item not found" });
+            throw new ApplicationException(Messages.WardrobeItemNotFound);
 
         var profile = await beautyProfileRepository.GetLatestByAccountIdAsync(accountId);
         var palette = profile?.Palette ?? [];

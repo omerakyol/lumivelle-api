@@ -1,7 +1,9 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -17,7 +19,6 @@ public class GetPostQueryHandler(
     IAccountRepository accountRepository)
     : IRequestHandler<GetPostQueryRequest, IDataResult<PostResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<PostResult>> Handle(
         GetPostQueryRequest request,
         CancellationToken cancellationToken)
@@ -27,8 +28,7 @@ public class GetPostQueryHandler(
         var document = await postRepository.GetByIdAsync(postId);
 
         if (document == null)
-            return new ErrorDataResult<PostResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Post not found" });
+            throw new ApplicationException(Messages.PostNotFound);
 
         var results = await PostResultBuilder.ToResultsAsync(
             [document], accountId, postLikeRepository, savedPostRepository, accountRepository);

@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -22,7 +24,7 @@ public class MoveSavedPostCommandHandler(
 
         var existingSave = await savedPostRepository.GetAsync(postId, accountId);
         if (existingSave == null)
-            return new ErrorResult(new ResultMessage { Code = "SAVE_NOT_FOUND", Description = "This post isn't saved" });
+            throw new ApplicationException(Messages.SavedPostNotFound);
 
         ObjectId? targetCollectionId = null;
         if (!string.IsNullOrEmpty(request.CollectionId) && request.CollectionId != "all-saved")
@@ -31,7 +33,7 @@ public class MoveSavedPostCommandHandler(
             var collection = await collectionRepository.GetByIdAsync(parsedId);
 
             if (collection == null || collection.AccountId != accountId)
-                return new ErrorResult(new ResultMessage { Code = "NOT_FOUND", Description = "Collection not found" });
+                throw new ApplicationException(Messages.CollectionNotFound);
 
             targetCollectionId = parsedId;
         }

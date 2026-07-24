@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -12,7 +14,6 @@ namespace Business.Handlers.Wardrobe.Commands.DeleteWardrobeItem;
 public class DeleteWardrobeItemCommandHandler(IWardrobeItemRepository wardrobeItemRepository)
     : IRequestHandler<DeleteWardrobeItemCommandRequest, IResult>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IResult> Handle(
         DeleteWardrobeItemCommandRequest request,
         CancellationToken cancellationToken)
@@ -22,7 +23,7 @@ public class DeleteWardrobeItemCommandHandler(IWardrobeItemRepository wardrobeIt
         var document = await wardrobeItemRepository.GetByIdAsync(itemId);
 
         if (document == null || document.AccountId != accountId)
-            return new ErrorResult(new ResultMessage { Code = "NOT_FOUND", Description = "Item not found" });
+            throw new ApplicationException(Messages.WardrobeItemNotFound);
 
         await wardrobeItemRepository.DeleteAsync(itemId);
 

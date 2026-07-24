@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -14,7 +16,6 @@ public class DeleteCommentCommandHandler(
     IPostRepository postRepository)
     : IRequestHandler<DeleteCommentCommandRequest, IResult>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IResult> Handle(DeleteCommentCommandRequest request, CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
@@ -22,7 +23,7 @@ public class DeleteCommentCommandHandler(
         var comment = await commentRepository.GetByIdAsync(commentId);
 
         if (comment == null || comment.AccountId != accountId)
-            return new ErrorResult(new ResultMessage { Code = "NOT_FOUND", Description = "Comment not found" });
+            throw new ApplicationException(Messages.CommentNotFound);
 
         await commentRepository.DeleteAsync(commentId);
 

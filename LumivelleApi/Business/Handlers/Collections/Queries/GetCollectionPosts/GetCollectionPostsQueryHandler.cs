@@ -1,8 +1,10 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Posts;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -33,8 +35,7 @@ public class GetCollectionPostsQueryHandler(
             var collection = await collectionRepository.GetByIdAsync(parsedId);
 
             if (collection == null || collection.AccountId != accountId)
-                return new ErrorDataResult<FeedPageResult>(
-                    new ResultMessage { Code = "NOT_FOUND", Description = "Collection not found" });
+                throw new ApplicationException(Messages.CollectionNotFound);
 
             collectionId = parsedId;
         }

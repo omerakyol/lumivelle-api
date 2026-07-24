@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -14,7 +16,6 @@ public class GetWardrobeItemQueryHandler(
     IOutfitRepository outfitRepository)
     : IRequestHandler<GetWardrobeItemQueryRequest, IDataResult<WardrobeItemResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<WardrobeItemResult>> Handle(
         GetWardrobeItemQueryRequest request,
         CancellationToken cancellationToken)
@@ -24,8 +25,7 @@ public class GetWardrobeItemQueryHandler(
         var document = await wardrobeItemRepository.GetByIdAsync(itemId);
 
         if (document == null || document.AccountId != accountId)
-            return new ErrorDataResult<WardrobeItemResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Item not found" });
+            throw new ApplicationException(Messages.WardrobeItemNotFound);
 
         var outfitCount = await outfitRepository.CountByItemIdAsync(accountId, itemId);
 

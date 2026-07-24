@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using MediatR;
@@ -11,7 +13,6 @@ namespace Business.Handlers.Accounts.Queries.GetAccountPublicProfile;
 public class GetAccountPublicProfileQueryHandler(IAccountRepository accountRepository)
     : IRequestHandler<GetAccountPublicProfileQueryRequest, IDataResult<AccountPublicProfileResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<AccountPublicProfileResult>> Handle(
         GetAccountPublicProfileQueryRequest request,
         CancellationToken cancellationToken)
@@ -20,8 +21,7 @@ public class GetAccountPublicProfileQueryHandler(IAccountRepository accountRepos
         var account = await accountRepository.GetByIdAsync(accountId);
 
         if (account == null)
-            return new ErrorDataResult<AccountPublicProfileResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Account not found" });
+            throw new ApplicationException(Messages.AccountNotFound);
 
         var result = new AccountPublicProfileResult
         {

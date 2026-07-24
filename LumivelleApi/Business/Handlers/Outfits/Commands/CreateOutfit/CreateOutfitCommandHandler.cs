@@ -1,10 +1,11 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Business.Handlers.Outfits.ValidationRules;
 using Business.Handlers.Wardrobe;
 using Core.Aspects.Autofac.Validation;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -19,8 +20,7 @@ public class CreateOutfitCommandHandler(
     IWardrobeItemRepository wardrobeItemRepository)
     : IRequestHandler<CreateOutfitCommandRequest, IDataResult<OutfitResult>>
 {
-    [SecuredOperation(Priority = 1)]
-    [ValidationAspect(typeof(CreateOutfitValidator), Priority = 2)]
+    [ValidationAspect(typeof(CreateOutfitValidator), Priority = 1)]
     public async Task<IDataResult<OutfitResult>> Handle(
         CreateOutfitCommandRequest request,
         CancellationToken cancellationToken)
@@ -32,8 +32,7 @@ public class CreateOutfitCommandHandler(
         var ownedItems = allItems.Where(i => requestedIds.Contains(i.Id)).ToList();
 
         if (ownedItems.Count != requestedIds.Length)
-            return new ErrorDataResult<OutfitResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "One or more items were not found" });
+            throw new ApplicationException(Messages.WardrobeItemNotFound);
 
         var document = new OutfitDocument
         {

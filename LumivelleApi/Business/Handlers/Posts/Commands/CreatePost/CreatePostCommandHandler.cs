@@ -1,8 +1,10 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Posts.ValidationRules;
 using Core.Aspects.Autofac.Validation;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -19,7 +21,6 @@ public class CreatePostCommandHandler(
     IAccountRepository accountRepository)
     : IRequestHandler<CreatePostCommandRequest, IDataResult<PostResult>>
 {
-    [SecuredOperation(Priority = 1)]
     [ValidationAspect(typeof(CreatePostValidator), Priority = 2)]
     public async Task<IDataResult<PostResult>> Handle(
         CreatePostCommandRequest request,
@@ -33,8 +34,7 @@ public class CreatePostCommandHandler(
             var itemId = ObjectId.Parse(request.WardrobeItemId);
             var item = await wardrobeItemRepository.GetByIdAsync(itemId);
             if (item == null || item.AccountId != accountId)
-                return new ErrorDataResult<PostResult>(
-                    new ResultMessage { Code = "NOT_FOUND", Description = "Wardrobe item not found" });
+                throw new ApplicationException(Messages.WardrobeItemNotFound);
 
             wardrobeItemId = itemId;
         }
@@ -45,8 +45,7 @@ public class CreatePostCommandHandler(
             var oId = ObjectId.Parse(request.OutfitId);
             var outfit = await outfitRepository.GetByIdAsync(oId);
             if (outfit == null || outfit.AccountId != accountId)
-                return new ErrorDataResult<PostResult>(
-                    new ResultMessage { Code = "NOT_FOUND", Description = "Outfit not found" });
+                throw new ApplicationException(Messages.OutfitNotFound);
 
             outfitId = oId;
         }

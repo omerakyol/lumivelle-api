@@ -1,9 +1,11 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Comments.ValidationRules;
 using Business.Handlers.Posts;
 using Core.Aspects.Autofac.Validation;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -19,7 +21,6 @@ public class CreateCommentCommandHandler(
     IAccountRepository accountRepository)
     : IRequestHandler<CreateCommentCommandRequest, IDataResult<CommentResult>>
 {
-    [SecuredOperation(Priority = 1)]
     [ValidationAspect(typeof(CreateCommentValidator), Priority = 2)]
     public async Task<IDataResult<CommentResult>> Handle(
         CreateCommentCommandRequest request,
@@ -30,8 +31,7 @@ public class CreateCommentCommandHandler(
         var post = await postRepository.GetByIdAsync(postId);
 
         if (post == null)
-            return new ErrorDataResult<CommentResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Post not found" });
+            throw new ApplicationException(Messages.PostNotFound);
 
         var document = new CommentDocument
         {

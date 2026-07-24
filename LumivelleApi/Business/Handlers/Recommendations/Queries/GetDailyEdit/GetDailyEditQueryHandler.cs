@@ -9,6 +9,7 @@ using Business.Handlers.Recommendations.ValidationRules;
 using Business.Handlers.Wardrobe;
 using Business.Services.Claude;
 using Core.Aspects.Autofac.Validation;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -46,7 +47,6 @@ public class GetDailyEditQueryHandler(
         Return only valid JSON. No markdown, no explanation.
         """;
 
-    [SecuredOperation(Priority = 1)]
     [ValidationAspect(typeof(GetDailyEditValidator), Priority = 2)]
     public async Task<IDataResult<DailyEditResult>> Handle(
         GetDailyEditQueryRequest request,
@@ -60,8 +60,7 @@ public class GetDailyEditQueryHandler(
 
         var profile = await beautyProfileRepository.GetLatestByAccountIdAsync(accountId);
         if (profile == null)
-            return new ErrorDataResult<DailyEditResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Beauty profile not found" });
+            throw new ApplicationException(Messages.BeautyProfileNotFound);
 
         var items = await wardrobeItemRepository.GetByAccountIdAsync(accountId, null);
         var outfitRec = BuildOutfitRec(items, profile.Palette);

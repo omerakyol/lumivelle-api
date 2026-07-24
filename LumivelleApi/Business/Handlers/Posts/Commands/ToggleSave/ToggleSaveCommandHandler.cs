@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -26,8 +28,7 @@ public class ToggleSaveCommandHandler(
         var post = await postRepository.GetByIdAsync(postId);
 
         if (post == null)
-            return new ErrorDataResult<ToggleSaveResult>(
-                new ResultMessage { Code = "NOT_FOUND", Description = "Post not found" });
+            throw new ApplicationException(Messages.PostNotFound);
 
         var existing = await savedPostRepository.GetAsync(postId, accountId);
         bool isSaved;
