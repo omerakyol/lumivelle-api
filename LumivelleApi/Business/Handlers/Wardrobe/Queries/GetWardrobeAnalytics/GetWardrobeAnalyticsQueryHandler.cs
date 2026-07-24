@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -12,15 +14,21 @@ using MediatR;
 
 namespace Business.Handlers.Wardrobe.Queries.GetWardrobeAnalytics;
 
-public class GetWardrobeAnalyticsQueryHandler(IWardrobeItemRepository wardrobeItemRepository)
+public class GetWardrobeAnalyticsQueryHandler(
+    IWardrobeItemRepository wardrobeItemRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<GetWardrobeAnalyticsQueryRequest, IDataResult<WardrobeAnalyticsResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<WardrobeAnalyticsResult>> Handle(
         GetWardrobeAnalyticsQueryRequest request,
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var items = await wardrobeItemRepository.GetByAccountIdAsync(accountId, null);
 
         var result = new WardrobeAnalyticsResult

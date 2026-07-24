@@ -5,6 +5,7 @@ using Business.BusinessAspects;
 using Business.Handlers.Wardrobe.ValidationRules;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -15,7 +16,8 @@ namespace Business.Handlers.Wardrobe.Commands.UpdateWardrobeItem;
 
 public class UpdateWardrobeItemCommandHandler(
     IWardrobeItemRepository wardrobeItemRepository,
-    IBeautyProfileRepository beautyProfileRepository)
+    IBeautyProfileRepository beautyProfileRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<UpdateWardrobeItemCommandRequest, IDataResult<WardrobeItemResult>>
 {
     [ValidationAspect(typeof(UpdateWardrobeItemValidator), Priority = 2)]
@@ -24,6 +26,11 @@ public class UpdateWardrobeItemCommandHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var itemId = ObjectId.Parse(request.Id);
         var document = await wardrobeItemRepository.GetByIdAsync(itemId);
 

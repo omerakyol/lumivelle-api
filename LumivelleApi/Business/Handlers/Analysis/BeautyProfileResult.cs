@@ -17,6 +17,9 @@ public class BeautyProfileResult
     public string[] AvoidColors { get; set; }
     public MakeupBreakdown MakeupBreakdown { get; set; }
     public HairMetrics HairMetrics { get; set; }
+    public string SkinType { get; set; }
+    public string[] SkinConcerns { get; set; }
+    public string SkinAnalysisNotes { get; set; }
     public string[] StyleReferences { get; set; }
     public string Headline { get; set; }
     public string Description { get; set; }
@@ -38,6 +41,9 @@ public class BeautyProfileResult
             AvoidColors = document.AvoidColors,
             MakeupBreakdown = document.MakeupBreakdown,
             HairMetrics = document.HairMetrics,
+            SkinType = document.SkinType,
+            SkinConcerns = document.SkinConcerns,
+            SkinAnalysisNotes = document.SkinAnalysisNotes,
             StyleReferences = document.StyleReferences,
             Headline = document.Headline,
             Description = document.Description,

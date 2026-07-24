@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core.Constants;
 using Core.Entities.Dtos.Account;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -23,7 +24,8 @@ public class GetAccountProfileQuery : IRequest<IDataResult<AccountProfileDto>>
             CancellationToken cancellationToken)
         {
             var accountId = UserInfoExtensions.GetAccountId();
-            var data = await accountRepository.GetByIdAsync(accountId);
+            var data =
+                await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
             if (data == null)
                 throw new ApplicationException(Messages.AccountNotFound);
 

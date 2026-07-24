@@ -1,8 +1,11 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Wardrobe.ValidationRules;
 using Core.Aspects.Autofac.Validation;
+using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -13,16 +16,21 @@ namespace Business.Handlers.Wardrobe.Commands.CreateWardrobeItem;
 
 public class CreateWardrobeItemCommandHandler(
     IWardrobeItemRepository wardrobeItemRepository,
-    IBeautyProfileRepository beautyProfileRepository)
+    IBeautyProfileRepository beautyProfileRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<CreateWardrobeItemCommandRequest, IDataResult<WardrobeItemResult>>
 {
-    [SecuredOperation(Priority = 1)]
     [ValidationAspect(typeof(CreateWardrobeItemValidator), Priority = 2)]
     public async Task<IDataResult<WardrobeItemResult>> Handle(
         CreateWardrobeItemCommandRequest request,
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var profile = await beautyProfileRepository.GetLatestByAccountIdAsync(accountId);
         var palette = profile?.Palette ?? [];
 

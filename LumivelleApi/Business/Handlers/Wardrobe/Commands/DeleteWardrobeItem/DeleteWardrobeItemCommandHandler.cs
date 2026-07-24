@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -11,7 +12,9 @@ using MongoDB.Bson;
 
 namespace Business.Handlers.Wardrobe.Commands.DeleteWardrobeItem;
 
-public class DeleteWardrobeItemCommandHandler(IWardrobeItemRepository wardrobeItemRepository)
+public class DeleteWardrobeItemCommandHandler(
+    IWardrobeItemRepository wardrobeItemRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<DeleteWardrobeItemCommandRequest, IResult>
 {
     public async Task<IResult> Handle(
@@ -19,6 +22,11 @@ public class DeleteWardrobeItemCommandHandler(IWardrobeItemRepository wardrobeIt
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var itemId = ObjectId.Parse(request.Id);
         var document = await wardrobeItemRepository.GetByIdAsync(itemId);
 

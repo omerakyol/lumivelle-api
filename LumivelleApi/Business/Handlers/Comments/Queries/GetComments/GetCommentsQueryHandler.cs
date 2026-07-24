@@ -16,7 +16,6 @@ public class GetCommentsQueryHandler(
     IAccountRepository accountRepository)
     : IRequestHandler<GetCommentsQueryRequest, IDataResult<CommentPageResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<CommentPageResult>> Handle(
         GetCommentsQueryRequest request,
         CancellationToken cancellationToken)

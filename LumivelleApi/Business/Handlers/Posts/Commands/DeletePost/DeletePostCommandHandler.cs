@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -15,12 +16,18 @@ public class DeletePostCommandHandler(
     IPostRepository postRepository,
     ICommentRepository commentRepository,
     IPostLikeRepository postLikeRepository,
-    ISavedPostRepository savedPostRepository)
+    ISavedPostRepository savedPostRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<DeletePostCommandRequest, IResult>
 {
     public async Task<IResult> Handle(DeletePostCommandRequest request, CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var postId = ObjectId.Parse(request.Id);
         var document = await postRepository.GetByIdAsync(postId);
 

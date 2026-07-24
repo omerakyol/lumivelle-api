@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Business.Handlers.Accounts.ValidationRules;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -21,7 +22,7 @@ public class ChangePasswordCommandHandler(
         var currentAccountId = UserInfoExtensions.GetAccountId();
 
         var account =
-            await accountRepository.GetByIdAsync(currentAccountId);
+            await accountRepository.GetAsync(x => x.Id == currentAccountId && x.AccountStatus == AccountStatus.Active);
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 

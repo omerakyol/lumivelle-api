@@ -17,6 +17,20 @@ namespace WebAPI.Controllers;
 [ApiController]
 public class AnalysisController : BaseApiController
 {
+    
+    
+    //// <summary>Run Claude vision analysis on an uploaded selfie</summary>
+    [Consumes("multipart/form-data")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<BeautyProfileResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [RequestSizeLimit(8_000_000)] // 8MB
+    [HttpPost("analyze")]
+    public async Task<IActionResult> Analyze(IFormFile file)
+    {
+        return GetResponse(await Mediator.Send(new AnalyzeCommandRequest { File = file })); 
+    }
+    
     /// <summary>Run Claude vision analysis on an uploaded selfie</summary>
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]

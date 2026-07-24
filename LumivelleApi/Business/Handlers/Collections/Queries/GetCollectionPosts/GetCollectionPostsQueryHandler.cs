@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Posts;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -27,6 +28,11 @@ public class GetCollectionPostsQueryHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         ObjectId? collectionId = null;
 
         if (request.CollectionId != "all-saved")

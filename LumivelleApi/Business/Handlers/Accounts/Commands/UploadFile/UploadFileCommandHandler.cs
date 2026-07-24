@@ -5,6 +5,7 @@ using Business.Handlers.Accounts.ValidationRules;
 using Business.Handlers.Media;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -24,7 +25,8 @@ public class UploadFileCommandHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
-        var account = await accountRepository.GetByIdAsync(accountId);
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 

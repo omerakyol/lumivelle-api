@@ -10,6 +10,7 @@ using Business.Handlers.Wardrobe;
 using Business.Services.Claude;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -29,7 +30,8 @@ public class GetDailyEditQueryHandler(
     IBeautyProfileRepository beautyProfileRepository,
     IWardrobeItemRepository wardrobeItemRepository,
     IDailyRecommendationRepository dailyRecommendationRepository,
-    IClaudeVisionService claudeVisionService)
+    IClaudeVisionService claudeVisionService,
+    IAccountRepository accountRepository)
     : IRequestHandler<GetDailyEditQueryRequest, IDataResult<DailyEditResult>>
 {
     private static readonly JsonSerializerOptions JsonOptions =
@@ -53,6 +55,10 @@ public class GetDailyEditQueryHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
 
         var cached = await dailyRecommendationRepository.GetByAccountAndDateAsync(accountId, request.LocalDate);
         if (cached != null)

@@ -1,17 +1,18 @@
 using System;
-using System.Net.Http;
+using System.IO; 
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
-using Business.BusinessAspects;
+using System.Threading.Tasks; 
 using Business.Handlers.Analysis.ValidationRules;
 using Business.Services.Claude;
 using Core.Aspects.Autofac.Validation;
+using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
-using MediatR;
+using MediatR; 
 
 namespace Business.Handlers.Analysis.Commands.Analyze;
 
@@ -28,6 +29,9 @@ public class ClaudeAnalysisDto
     public string[] AvoidColors { get; set; }
     public MakeupBreakdown MakeupBreakdown { get; set; }
     public HairMetrics HairMetrics { get; set; }
+    public string SkinType { get; set; }
+    public string[] SkinConcerns { get; set; }
+    public string SkinAnalysisNotes { get; set; }
     public string[] StyleReferences { get; set; }
     public string Headline { get; set; }
     public string Description { get; set; }
@@ -36,7 +40,7 @@ public class ClaudeAnalysisDto
 public class AnalyzeCommandHandler(
     IBeautyProfileRepository beautyProfileRepository,
     IClaudeVisionService claudeVisionService,
-    IHttpClientFactory httpClientFactory)
+    IAccountRepository accountRepository)
     : IRequestHandler<AnalyzeCommandRequest, IDataResult<BeautyProfileResult>>
 {
     private static readonly JsonSerializerOptions JsonOptions =
@@ -75,6 +79,9 @@ public class AnalyzeCommandHandler(
             "forehead": string,
             "density": string
           },
+          "skinType": string,        // one of: "Oily", "Dry", "Combination", "Normal", "Sensitive"
+          "skinConcerns": string[],  // visible skin concerns, e.g. "Acne", "Wrinkles", "Redness", "Hyperpigmentation", "Dark Circles", "Enlarged Pores", "Dryness", "Dullness". Empty array if none are visible.
+          "skinAnalysisNotes": string, // one short sentence summarising the skin concerns, for later product recommendations
           "styleReferences": string[], // 5 style aesthetic keywords
           "headline": string,          // one poetic line like "Warm Autumn, softly luminous"
           "description": string        // one sentence personalised description
@@ -83,19 +90,24 @@ public class AnalyzeCommandHandler(
         Return only valid JSON. No markdown, no explanation.
         """;
 
-    [SecuredOperation(Priority = 1)]
-    [ValidationAspect(typeof(AnalyzeValidator), Priority = 2)]
+    [ValidationAspect(typeof(AnalyzeValidator), Priority = 1)]
     public async Task<IDataResult<BeautyProfileResult>> Handle(
         AnalyzeCommandRequest request,
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+        
+        await using var memoryStream = new MemoryStream();
+        await request.File.CopyToAsync(memoryStream, cancellationToken);
+        var imageBytes = memoryStream.ToArray();
 
-        var http = httpClientFactory.CreateClient();
-        var imageBytes = await http.GetByteArrayAsync(request.ImageUrl, cancellationToken);
-        var mediaType = request.ImageUrl.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-            ? "image/png"
-            : "image/jpeg";
+        request.File.OpenReadStream().Position = 0;
+        
+        var mediaType = GetMediaType(request.File.FileName);
 
         var raw = await claudeVisionService.AnalyzeImageAsync(
             imageBytes, mediaType, SystemPrompt, "Analyze this selfie.", cancellationToken);
@@ -118,6 +130,9 @@ public class AnalyzeCommandHandler(
             AvoidColors = parsed.AvoidColors ?? [],
             MakeupBreakdown = parsed.MakeupBreakdown,
             HairMetrics = parsed.HairMetrics,
+            SkinType = parsed.SkinType,
+            SkinConcerns = parsed.SkinConcerns ?? [],
+            SkinAnalysisNotes = parsed.SkinAnalysisNotes,
             StyleReferences = parsed.StyleReferences ?? [],
             Headline = parsed.Headline,
             Description = parsed.Description,
@@ -128,6 +143,19 @@ public class AnalyzeCommandHandler(
 
         return new SuccessDataResult<BeautyProfileResult>(BeautyProfileResult.FromDocument(document));
     }
+
+    private static string GetMediaType(string fileName) =>
+        Path.GetExtension(fileName).ToLowerInvariant() switch
+        {
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".bmp" => "image/bmp",
+            ".webp" => "image/webp",
+            ".heic" => "image/heic",
+            ".heif" => "image/heif",
+            ".avif" => "image/avif",
+            _ => "image/jpeg"
+        };
 
     private static string ExtractJson(string raw)
     {

@@ -7,6 +7,8 @@ using Business.BusinessAspects;
 using Business.Handlers.Wardrobe.ValidationRules;
 using Business.Services.Claude;
 using Core.Aspects.Autofac.Validation;
+using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -25,7 +27,8 @@ public class ClaudeWardrobeTagDto
 public class AnalyzeWardrobeItemCommandHandler(
     IBeautyProfileRepository beautyProfileRepository,
     IClaudeVisionService claudeVisionService,
-    IHttpClientFactory httpClientFactory)
+    IHttpClientFactory httpClientFactory,
+    IAccountRepository accountRepository)
     : IRequestHandler<AnalyzeWardrobeItemCommandRequest, IDataResult<AnalyzeWardrobeItemResult>>
 {
     private static readonly JsonSerializerOptions JsonOptions =
@@ -44,13 +47,17 @@ public class AnalyzeWardrobeItemCommandHandler(
         Return only valid JSON. No markdown, no explanation.
         """;
 
-    [SecuredOperation(Priority = 1)]
     [ValidationAspect(typeof(AnalyzeWardrobeItemValidator), Priority = 2)]
     public async Task<IDataResult<AnalyzeWardrobeItemResult>> Handle(
         AnalyzeWardrobeItemCommandRequest request,
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var profile = await beautyProfileRepository.GetLatestByAccountIdAsync(accountId);
         var palette = profile?.Palette ?? [];
 

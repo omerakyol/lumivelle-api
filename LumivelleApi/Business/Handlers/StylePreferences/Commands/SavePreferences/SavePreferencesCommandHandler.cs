@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Business.Handlers.StylePreferences.ValidationRules;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -13,16 +13,22 @@ using MediatR;
 
 namespace Business.Handlers.StylePreferences.Commands.SavePreferences;
 
-public class SavePreferencesCommandHandler(IStylePreferenceRepository stylePreferenceRepository)
+public class SavePreferencesCommandHandler(
+    IStylePreferenceRepository stylePreferenceRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<SavePreferencesCommandRequest, IResult>
 {
-    [SecuredOperation(Priority = 1)]
-    [ValidationAspect(typeof(SavePreferencesValidator), Priority = 2)]
+    [ValidationAspect(typeof(SavePreferencesValidator), Priority = 1)]
     public async Task<IResult> Handle(
         SavePreferencesCommandRequest request,
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var existing = await stylePreferenceRepository.GetByAccountIdAsync(accountId);
 
         if (existing == null)

@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -15,17 +18,21 @@ namespace Business.Handlers.Collections.Queries.GetCollections;
 public class GetCollectionsQueryHandler(
     ICollectionRepository collectionRepository,
     ISavedPostRepository savedPostRepository,
-    IPostRepository postRepository)
+    IPostRepository postRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<GetCollectionsQueryRequest, IDataResult<List<CollectionResult>>>
 {
     private const int PreviewCount = 4;
 
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<List<CollectionResult>>> Handle(
         GetCollectionsQueryRequest request,
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
 
         var results = new List<CollectionResult>
         {

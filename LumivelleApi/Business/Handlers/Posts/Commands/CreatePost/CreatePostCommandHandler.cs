@@ -5,6 +5,7 @@ using Business.BusinessAspects;
 using Business.Handlers.Posts.ValidationRules;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -27,6 +28,10 @@ public class CreatePostCommandHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
 
         ObjectId? wardrobeItemId = null;
         if (!string.IsNullOrEmpty(request.WardrobeItemId))
@@ -63,7 +68,6 @@ public class CreatePostCommandHandler(
 
         await postRepository.AddAsync(document);
 
-        var account = await accountRepository.GetByIdAsync(accountId);
         var author = AuthorLookup.ToAuthorResult(account);
 
         return new SuccessDataResult<PostResult>(PostResult.FromDocument(document, author, false, false));

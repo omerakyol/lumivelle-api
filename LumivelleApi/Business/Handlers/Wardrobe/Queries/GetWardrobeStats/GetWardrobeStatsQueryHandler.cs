@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -12,15 +14,20 @@ namespace Business.Handlers.Wardrobe.Queries.GetWardrobeStats;
 
 public class GetWardrobeStatsQueryHandler(
     IWardrobeItemRepository wardrobeItemRepository,
-    IOutfitRepository outfitRepository)
+    IOutfitRepository outfitRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<GetWardrobeStatsQueryRequest, IDataResult<WardrobeStatsResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<WardrobeStatsResult>> Handle(
         GetWardrobeStatsQueryRequest request,
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var items = await wardrobeItemRepository.GetByAccountIdAsync(accountId, null);
         var outfits = await outfitRepository.GetByAccountIdAsync(accountId);
 

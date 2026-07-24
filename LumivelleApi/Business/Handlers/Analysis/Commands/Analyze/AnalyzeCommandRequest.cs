@@ -1,9 +1,10 @@
 using Core.Utilities.Results;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Business.Handlers.Analysis.Commands.Analyze;
 
 public class AnalyzeCommandRequest : IRequest<IDataResult<BeautyProfileResult>>
 {
-    public string ImageUrl { get; set; }
+    public IFormFile File { get; set; } 
 }

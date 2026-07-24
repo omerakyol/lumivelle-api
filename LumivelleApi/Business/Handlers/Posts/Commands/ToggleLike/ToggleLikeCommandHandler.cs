@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -15,7 +16,8 @@ namespace Business.Handlers.Posts.Commands.ToggleLike;
 
 public class ToggleLikeCommandHandler(
     IPostRepository postRepository,
-    IPostLikeRepository postLikeRepository)
+    IPostLikeRepository postLikeRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<ToggleLikeCommandRequest, IDataResult<ToggleLikeResult>>
 {
     public async Task<IDataResult<ToggleLikeResult>> Handle(
@@ -23,6 +25,11 @@ public class ToggleLikeCommandHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var postId = ObjectId.Parse(request.PostId);
         var post = await postRepository.GetByIdAsync(postId);
 

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Analysis;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -11,7 +12,9 @@ using MediatR;
 
 namespace Business.Handlers.Analysis.Queries.GetProfile;
 
-public class GetProfileQueryHandler(IBeautyProfileRepository beautyProfileRepository)
+public class GetProfileQueryHandler(
+    IBeautyProfileRepository beautyProfileRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<GetProfileQueryRequest, IDataResult<BeautyProfileResult>>
 {
     public async Task<IDataResult<BeautyProfileResult>> Handle(
@@ -19,6 +22,11 @@ public class GetProfileQueryHandler(IBeautyProfileRepository beautyProfileReposi
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var profile = await beautyProfileRepository.GetLatestByAccountIdAsync(accountId);
 
         if (profile == null)

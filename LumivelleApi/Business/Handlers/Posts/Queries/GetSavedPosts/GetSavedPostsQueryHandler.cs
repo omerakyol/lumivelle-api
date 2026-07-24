@@ -1,7 +1,10 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -16,12 +19,16 @@ public class GetSavedPostsQueryHandler(
     IAccountRepository accountRepository)
     : IRequestHandler<GetSavedPostsQueryRequest, IDataResult<FeedPageResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<FeedPageResult>> Handle(
         GetSavedPostsQueryRequest request,
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var cursor = PostResultBuilder.ParseCursor(request.Cursor);
 
         var savedPage = await savedPostRepository.GetByAccountIdPageAsync(

@@ -41,6 +41,9 @@ public class BeautyProfileDocument : DocumentDbEntity
     public string[] AvoidColors { get; set; } = [];
     public MakeupBreakdown MakeupBreakdown { get; set; }
     public HairMetrics HairMetrics { get; set; }
+    public string SkinType { get; set; }
+    public string[] SkinConcerns { get; set; } = [];
+    public string SkinAnalysisNotes { get; set; }
     public string[] StyleReferences { get; set; } = [];
     public string Headline { get; set; }
     public string Description { get; set; }

@@ -6,6 +6,7 @@ using Business.Handlers.Comments.ValidationRules;
 using Business.Handlers.Posts;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -27,6 +28,11 @@ public class CreateCommentCommandHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var postId = ObjectId.Parse(request.PostId);
         var post = await postRepository.GetByIdAsync(postId);
 
@@ -45,7 +51,6 @@ public class CreateCommentCommandHandler(
         post.CommentCount += 1;
         await postRepository.UpdateAsync(post);
 
-        var account = await accountRepository.GetByIdAsync(accountId);
         var author = AuthorLookup.ToAuthorResult(account);
 
         return new SuccessDataResult<CommentResult>(CommentResult.FromDocument(document, author));
