@@ -18,7 +18,7 @@ public static class AuthorLookup
         return new AuthorResult
         {
             Id = account.Id.ToString(),
-            Name = GetAccountPublicProfileQueryHandler.ToDisplayName(account.Email),
+            Name = GetAccountPublicProfileQueryHandler.ToDisplayName(account),
             AvatarUrl = account.PhotoUrl
         };
     }
