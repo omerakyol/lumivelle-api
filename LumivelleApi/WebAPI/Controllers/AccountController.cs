@@ -12,6 +12,7 @@ using Business.Handlers.Accounts.Commands.ResetPassword;
 using Business.Handlers.Accounts.Commands.ResetTwoFactor;
 using Business.Handlers.Accounts.Commands.SetupTwoFactor;
 using Business.Handlers.Accounts.Commands.UpdateDeviceInformation;
+using Business.Handlers.Accounts.Commands.UpdateProfile;
 using Business.Handlers.Accounts.Commands.UploadProfilePicture;
 using Business.Handlers.Accounts.Commands.VerifyTwoFactor;
 using Business.Handlers.Accounts.Queries.GetAccountProfile;
@@ -292,5 +293,17 @@ public class AccountController : BaseApiController
     public async Task<IActionResult> GetPublicProfile([FromRoute] string id)
     {
         return GetResponse(await Mediator.Send(new GetAccountPublicProfileQueryRequest { Id = id }));
+    }
+
+    /// <summary>Update the current user's own display name and bio</summary>
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpPut("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileCommandRequest request)
+    {
+        var result = await Mediator.Send(request);
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
     }
 }
