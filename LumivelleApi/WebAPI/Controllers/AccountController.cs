@@ -10,6 +10,7 @@ using Business.Handlers.Accounts.Commands.Register;
 using Business.Handlers.Accounts.Commands.RegisterFirebaseToken;
 using Business.Handlers.Accounts.Commands.ResetPassword;
 using Business.Handlers.Accounts.Commands.ResetTwoFactor;
+using Business.Handlers.Accounts.Commands.SetAccountFlags;
 using Business.Handlers.Accounts.Commands.SetupTwoFactor;
 using Business.Handlers.Accounts.Commands.UpdateDeviceInformation;
 using Business.Handlers.Accounts.Commands.UpdateProfile;
@@ -303,6 +304,19 @@ public class AccountController : BaseApiController
     [HttpPut("profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileCommandRequest request)
     {
+        var result = await Mediator.Send(request);
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>Admin-only: set an account's verified/creator flags</summary>
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpPut("{id}/flags")]
+    public async Task<IActionResult> SetAccountFlags([FromRoute] string id, [FromBody] SetAccountFlagsCommandRequest request)
+    {
+        request.Id = id;
         var result = await Mediator.Send(request);
         return result.Success ? Ok(result) : BadRequest(result.Messages);
     }
