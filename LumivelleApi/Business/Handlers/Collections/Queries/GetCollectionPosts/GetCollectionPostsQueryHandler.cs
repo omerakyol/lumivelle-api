@@ -19,7 +19,8 @@ public class GetCollectionPostsQueryHandler(
     ISavedPostRepository savedPostRepository,
     IPostRepository postRepository,
     IPostLikeRepository postLikeRepository,
-    IAccountRepository accountRepository)
+    IAccountRepository accountRepository,
+    IFollowRepository followRepository)
     : IRequestHandler<GetCollectionPostsQueryRequest, IDataResult<FeedPageResult>>
 {
     [SecuredOperation(Priority = 1)]
@@ -62,7 +63,7 @@ public class GetCollectionPostsQueryHandler(
             .ToList();
 
         var results = await PostResultBuilder.ToResultsAsync(
-            orderedPosts, accountId, postLikeRepository, savedPostRepository, accountRepository);
+            orderedPosts, accountId, postLikeRepository, savedPostRepository, accountRepository, followRepository);
 
         return new SuccessDataResult<FeedPageResult>(new FeedPageResult
         {

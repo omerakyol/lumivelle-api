@@ -17,7 +17,8 @@ public class GetPostQueryHandler(
     IPostRepository postRepository,
     IPostLikeRepository postLikeRepository,
     ISavedPostRepository savedPostRepository,
-    IAccountRepository accountRepository)
+    IAccountRepository accountRepository,
+    IFollowRepository followRepository)
     : IRequestHandler<GetPostQueryRequest, IDataResult<PostResult>>
 {
     public async Task<IDataResult<PostResult>> Handle(
@@ -37,7 +38,7 @@ public class GetPostQueryHandler(
             throw new ApplicationException(Messages.PostNotFound);
 
         var results = await PostResultBuilder.ToResultsAsync(
-            [document], accountId, postLikeRepository, savedPostRepository, accountRepository);
+            [document], accountId, postLikeRepository, savedPostRepository, accountRepository, followRepository);
 
         return new SuccessDataResult<PostResult>(results.Single());
     }

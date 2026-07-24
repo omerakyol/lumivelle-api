@@ -15,7 +15,8 @@ public class GetMyPostsQueryHandler(
     IPostRepository postRepository,
     IPostLikeRepository postLikeRepository,
     ISavedPostRepository savedPostRepository,
-    IAccountRepository accountRepository)
+    IAccountRepository accountRepository,
+    IFollowRepository followRepository)
     : IRequestHandler<GetMyPostsQueryRequest, IDataResult<FeedPageResult>>
 {
     public async Task<IDataResult<FeedPageResult>> Handle(
@@ -32,7 +33,7 @@ public class GetMyPostsQueryHandler(
 
         var posts = await postRepository.GetByAccountIdPageAsync(accountId, cursor, PostResultBuilder.PageSize);
         var page = await PostResultBuilder.BuildPageAsync(
-            posts, accountId, postLikeRepository, savedPostRepository, accountRepository);
+            posts, accountId, postLikeRepository, savedPostRepository, accountRepository, followRepository);
 
         return new SuccessDataResult<FeedPageResult>(page);
     }

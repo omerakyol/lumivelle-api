@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Posts;
+using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using MediatR;
@@ -13,13 +14,15 @@ namespace Business.Handlers.Comments.Queries.GetComments;
 
 public class GetCommentsQueryHandler(
     ICommentRepository commentRepository,
-    IAccountRepository accountRepository)
+    IAccountRepository accountRepository,
+    IFollowRepository followRepository)
     : IRequestHandler<GetCommentsQueryRequest, IDataResult<CommentPageResult>>
 {
     public async Task<IDataResult<CommentPageResult>> Handle(
         GetCommentsQueryRequest request,
         CancellationToken cancellationToken)
     {
+        var viewerAccountId = UserInfoExtensions.GetAccountId();
         var postId = ObjectId.Parse(request.PostId);
         var cursor = PostResultBuilder.ParseCursor(request.Cursor);
 
@@ -29,7 +32,8 @@ public class GetCommentsQueryHandler(
             return new SuccessDataResult<CommentPageResult>(
                 new CommentPageResult { Comments = [], NextCursor = null });
 
-        var authors = await AuthorLookup.GetAuthorsAsync(accountRepository, comments.Select(c => c.AccountId));
+        var authors = await AuthorLookup.GetAuthorsAsync(
+            accountRepository, followRepository, viewerAccountId, comments.Select(c => c.AccountId));
 
         var results = comments
             .Select(c => CommentResult.FromDocument(c, authors.GetValueOrDefault(c.AccountId.ToString())))

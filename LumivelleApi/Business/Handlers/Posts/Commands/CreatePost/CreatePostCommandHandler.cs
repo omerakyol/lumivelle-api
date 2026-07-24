@@ -68,7 +68,7 @@ public class CreatePostCommandHandler(
 
         await postRepository.AddAsync(document);
 
-        var author = AuthorLookup.ToAuthorResult(account);
+        var author = AuthorLookup.ToAuthorResult(account, false);
 
         return new SuccessDataResult<PostResult>(PostResult.FromDocument(document, author, false, false));
     }

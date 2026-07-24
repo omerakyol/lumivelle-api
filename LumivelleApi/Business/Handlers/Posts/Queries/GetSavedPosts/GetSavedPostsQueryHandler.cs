@@ -16,7 +16,8 @@ public class GetSavedPostsQueryHandler(
     ISavedPostRepository savedPostRepository,
     IPostRepository postRepository,
     IPostLikeRepository postLikeRepository,
-    IAccountRepository accountRepository)
+    IAccountRepository accountRepository,
+    IFollowRepository followRepository)
     : IRequestHandler<GetSavedPostsQueryRequest, IDataResult<FeedPageResult>>
 {
     public async Task<IDataResult<FeedPageResult>> Handle(
@@ -48,7 +49,7 @@ public class GetSavedPostsQueryHandler(
             .ToList();
 
         var results = await PostResultBuilder.ToResultsAsync(
-            orderedPosts, accountId, postLikeRepository, savedPostRepository, accountRepository);
+            orderedPosts, accountId, postLikeRepository, savedPostRepository, accountRepository, followRepository);
 
         return new SuccessDataResult<FeedPageResult>(new FeedPageResult
         {

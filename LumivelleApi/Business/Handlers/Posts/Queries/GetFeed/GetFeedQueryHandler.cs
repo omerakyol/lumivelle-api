@@ -21,7 +21,8 @@ public class GetFeedQueryHandler(
     ISavedPostRepository savedPostRepository,
     IAccountRepository accountRepository,
     IWardrobeItemRepository wardrobeItemRepository,
-    IOutfitRepository outfitRepository)
+    IOutfitRepository outfitRepository,
+    IFollowRepository followRepository)
     : IRequestHandler<GetFeedQueryRequest, IDataResult<FeedPageResult>>
 {
     public async Task<IDataResult<FeedPageResult>> Handle(
@@ -46,7 +47,7 @@ public class GetFeedQueryHandler(
             : await FilterByCategoryAsync(rawPosts, request.Category, wardrobeItemRepository, outfitRepository);
 
         var results = await PostResultBuilder.ToResultsAsync(
-            filteredPosts, accountId, postLikeRepository, savedPostRepository, accountRepository);
+            filteredPosts, accountId, postLikeRepository, savedPostRepository, accountRepository, followRepository);
 
         return new SuccessDataResult<FeedPageResult>(new FeedPageResult { Posts = results, NextCursor = nextCursor });
     }

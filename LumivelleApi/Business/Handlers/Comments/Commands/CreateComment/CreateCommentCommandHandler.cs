@@ -51,7 +51,7 @@ public class CreateCommentCommandHandler(
         post.CommentCount += 1;
         await postRepository.UpdateAsync(post);
 
-        var author = AuthorLookup.ToAuthorResult(account);
+        var author = AuthorLookup.ToAuthorResult(account, false);
 
         return new SuccessDataResult<CommentResult>(CommentResult.FromDocument(document, author));
     }

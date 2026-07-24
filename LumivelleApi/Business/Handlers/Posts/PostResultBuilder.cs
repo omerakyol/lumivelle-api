@@ -26,7 +26,8 @@ public static class PostResultBuilder
         ObjectId accountId,
         IPostLikeRepository postLikeRepository,
         ISavedPostRepository savedPostRepository,
-        IAccountRepository accountRepository)
+        IAccountRepository accountRepository,
+        IFollowRepository followRepository)
     {
         if (posts.Count == 0)
             return [];
@@ -41,7 +42,8 @@ public static class PostResultBuilder
             .Select(s => s.PostId)
             .ToHashSet();
 
-        var authors = await AuthorLookup.GetAuthorsAsync(accountRepository, posts.Select(p => p.AccountId));
+        var authors = await AuthorLookup.GetAuthorsAsync(
+            accountRepository, followRepository, accountId, posts.Select(p => p.AccountId));
 
         return posts
             .Select(p => PostResult.FromDocument(
@@ -57,9 +59,11 @@ public static class PostResultBuilder
         ObjectId accountId,
         IPostLikeRepository postLikeRepository,
         ISavedPostRepository savedPostRepository,
-        IAccountRepository accountRepository)
+        IAccountRepository accountRepository,
+        IFollowRepository followRepository)
     {
-        var results = await ToResultsAsync(posts, accountId, postLikeRepository, savedPostRepository, accountRepository);
+        var results = await ToResultsAsync(
+            posts, accountId, postLikeRepository, savedPostRepository, accountRepository, followRepository);
 
         return new FeedPageResult
         {
