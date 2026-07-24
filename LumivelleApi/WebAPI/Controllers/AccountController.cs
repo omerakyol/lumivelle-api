@@ -18,6 +18,7 @@ using Business.Handlers.Accounts.Commands.UploadProfilePicture;
 using Business.Handlers.Accounts.Commands.VerifyTwoFactor;
 using Business.Handlers.Accounts.Queries.GetAccountProfile;
 using Business.Handlers.Accounts.Queries.GetAccountPublicProfile;
+using Business.Handlers.Follows.Commands.ToggleFollow;
 using Core.Entities.Dtos.Account;
 using Core.Utilities.Results;
 using Microsoft.AspNetCore.Authorization;
@@ -319,5 +320,15 @@ public class AccountController : BaseApiController
         request.Id = id;
         var result = await Mediator.Send(request);
         return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>Toggle following another account</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<ToggleFollowResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpPost("{id}/follow")]
+    public async Task<IActionResult> ToggleFollow([FromRoute] string id)
+    {
+        return GetResponse(await Mediator.Send(new ToggleFollowCommandRequest { FolloweeId = id }));
     }
 }
