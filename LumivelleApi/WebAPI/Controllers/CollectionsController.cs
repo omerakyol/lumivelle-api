@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using Business.Handlers.Collections;
 using Business.Handlers.Collections.Commands.CreateCollection;
 using Business.Handlers.Collections.Commands.DeleteCollection;
+using Business.Handlers.Collections.Queries.GetCollectionPosts;
 using Business.Handlers.Collections.Queries.GetCollections;
+using Business.Handlers.Posts;
 using Core.Utilities.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -48,5 +50,15 @@ public class CollectionsController : BaseApiController
     public async Task<IActionResult> GetCollections()
     {
         return GetResponse(await Mediator.Send(new GetCollectionsQueryRequest()));
+    }
+
+    /// <summary>List a collection's posts, newest-saved first ("all-saved" for the default bucket)</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<FeedPageResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("{id}/posts")]
+    public async Task<IActionResult> GetCollectionPosts([FromRoute] string id, [FromQuery] string cursor = null)
+    {
+        return GetResponse(await Mediator.Send(new GetCollectionPostsQueryRequest { CollectionId = id, Cursor = cursor }));
     }
 }
