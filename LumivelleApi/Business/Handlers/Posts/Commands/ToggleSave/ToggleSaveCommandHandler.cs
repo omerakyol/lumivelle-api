@@ -39,9 +39,18 @@ public class ToggleSaveCommandHandler(
         }
         else
         {
+            ObjectId? collectionId = !string.IsNullOrEmpty(request.CollectionId) && request.CollectionId != "all-saved"
+                ? ObjectId.Parse(request.CollectionId)
+                : null;
+
             try
             {
-                await savedPostRepository.AddAsync(new SavedPostDocument { PostId = postId, AccountId = accountId });
+                await savedPostRepository.AddAsync(new SavedPostDocument
+                {
+                    PostId = postId,
+                    AccountId = accountId,
+                    CollectionId = collectionId
+                });
                 isSaved = true;
             }
             catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)

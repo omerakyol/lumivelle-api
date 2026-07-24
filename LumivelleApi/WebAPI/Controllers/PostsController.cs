@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Business.Handlers.Collections.Commands.MoveSavedPost;
 using Business.Handlers.Comments;
 using Business.Handlers.Comments.Commands.CreateComment;
 using Business.Handlers.Comments.Queries.GetComments;
@@ -98,14 +99,30 @@ public class PostsController : BaseApiController
         return GetResponse(await Mediator.Send(new ToggleLikeCommandRequest { PostId = id }));
     }
 
-    /// <summary>Toggle save on a post</summary>
+    /// <summary>Toggle save on a post (optional CollectionId targets a specific collection when saving)</summary>
+    [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<ToggleSaveResult>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
     [HttpPost("{id}/save")]
-    public async Task<IActionResult> ToggleSave([FromRoute] string id)
+    public async Task<IActionResult> ToggleSave([FromRoute] string id, [FromBody] ToggleSaveCommandRequest request = null)
     {
-        return GetResponse(await Mediator.Send(new ToggleSaveCommandRequest { PostId = id }));
+        request ??= new ToggleSaveCommandRequest();
+        request.PostId = id;
+        return GetResponse(await Mediator.Send(request));
+    }
+
+    /// <summary>Move a saved post to a different collection ("all-saved" for the default bucket)</summary>
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpPut("{id}/collection")]
+    public async Task<IActionResult> MoveSavedPost([FromRoute] string id, [FromBody] MoveSavedPostCommandRequest request)
+    {
+        request.PostId = id;
+        var result = await Mediator.Send(request);
+        return result.Success ? Ok(result) : BadRequest(result);
     }
 
     /// <summary>List a post's comments, oldest first</summary>

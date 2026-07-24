@@ -1,9 +1,9 @@
 using Core.Utilities.Results;
 using MediatR;
 
-namespace Business.Handlers.Posts.Commands.ToggleSave;
+namespace Business.Handlers.Collections.Commands.MoveSavedPost;
 
-public class ToggleSaveCommandRequest : IRequest<IDataResult<ToggleSaveResult>>
+public class MoveSavedPostCommandRequest : IRequest<IResult>
 {
     public string PostId { get; set; }
     public string CollectionId { get; set; }

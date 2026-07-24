@@ -1,0 +1,44 @@
+using System.Threading;
+using System.Threading.Tasks;
+using Business.BusinessAspects;
+using Core.Extensions;
+using Core.Utilities.Results;
+using DataAccess.Abstract;
+using MediatR;
+using MongoDB.Bson;
+
+namespace Business.Handlers.Collections.Commands.MoveSavedPost;
+
+public class MoveSavedPostCommandHandler(
+    ISavedPostRepository savedPostRepository,
+    ICollectionRepository collectionRepository)
+    : IRequestHandler<MoveSavedPostCommandRequest, IResult>
+{
+    [SecuredOperation(Priority = 1)]
+    public async Task<IResult> Handle(MoveSavedPostCommandRequest request, CancellationToken cancellationToken)
+    {
+        var accountId = UserInfoExtensions.GetAccountId();
+        var postId = ObjectId.Parse(request.PostId);
+
+        var existingSave = await savedPostRepository.GetAsync(postId, accountId);
+        if (existingSave == null)
+            return new ErrorResult(new ResultMessage { Code = "SAVE_NOT_FOUND", Description = "This post isn't saved" });
+
+        ObjectId? targetCollectionId = null;
+        if (!string.IsNullOrEmpty(request.CollectionId) && request.CollectionId != "all-saved")
+        {
+            var parsedId = ObjectId.Parse(request.CollectionId);
+            var collection = await collectionRepository.GetByIdAsync(parsedId);
+
+            if (collection == null || collection.AccountId != accountId)
+                return new ErrorResult(new ResultMessage { Code = "NOT_FOUND", Description = "Collection not found" });
+
+            targetCollectionId = parsedId;
+        }
+
+        existingSave.CollectionId = targetCollectionId;
+        await savedPostRepository.UpdateAsync(existingSave);
+
+        return new SuccessResult();
+    }
+}
