@@ -11,4 +11,5 @@ public interface IPostRepository : IDocumentDbRepository<PostDocument>
     Task<List<PostDocument>> GetFeedPageAsync(System.DateTime? cursor, int pageSize);
     Task<List<PostDocument>> GetByAccountIdPageAsync(ObjectId accountId, System.DateTime? cursor, int pageSize);
     Task<List<PostDocument>> GetByIdsAsync(IEnumerable<ObjectId> ids);
+    Task<int> CountByAccountIdAsync(ObjectId accountId);
 }

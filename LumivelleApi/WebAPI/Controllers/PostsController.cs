@@ -9,6 +9,7 @@ using Business.Handlers.Posts.Commands.CreatePost;
 using Business.Handlers.Posts.Commands.DeletePost;
 using Business.Handlers.Posts.Commands.ToggleLike;
 using Business.Handlers.Posts.Commands.ToggleSave;
+using Business.Handlers.Posts.Queries.GetAccountPosts;
 using Business.Handlers.Posts.Queries.GetFeed;
 using Business.Handlers.Posts.Queries.GetMyPosts;
 using Business.Handlers.Posts.Queries.GetPost;
@@ -77,6 +78,16 @@ public class PostsController : BaseApiController
     public async Task<IActionResult> GetMyPosts([FromQuery] string cursor = null)
     {
         return GetResponse(await Mediator.Send(new GetMyPostsQueryRequest { Cursor = cursor }));
+    }
+
+    /// <summary>An account's own posts, newest first (used by the creator profile screen)</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<FeedPageResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("account/{id}")]
+    public async Task<IActionResult> GetAccountPosts([FromRoute] string id, [FromQuery] string cursor = null)
+    {
+        return GetResponse(await Mediator.Send(new GetAccountPostsQueryRequest { AccountId = id, Cursor = cursor }));
     }
 
     /// <summary>Posts the current user has saved, newest-saved first</summary>

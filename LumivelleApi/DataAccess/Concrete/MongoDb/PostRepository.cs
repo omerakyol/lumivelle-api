@@ -55,4 +55,12 @@ public class PostRepository : MongoDbRepositoryBase<PostDocument>, IPostReposito
 
         return await _collection.Find(filter).ToListAsync();
     }
+
+    public async Task<int> CountByAccountIdAsync(ObjectId accountId)
+    {
+        var filter = Builders<PostDocument>.Filter.Eq(x => x.AccountId, accountId)
+            & Builders<PostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+
+        return (int)await _collection.CountDocumentsAsync(filter);
+    }
 }
