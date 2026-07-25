@@ -24,6 +24,11 @@ public class Account : DocumentDbEntity
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime? Last2FaVerifiedAt { get; set; } // Optional, for information
 
+    public string PasswordResetCode { get; set; }
+
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? PasswordResetCodeExpiresAt { get; set; }
+
     public string DisplayName { get; set; }
     public string Bio { get; set; }
     public bool IsVerified { get; set; } = false;

@@ -25,12 +25,9 @@ public class MailManager : IMailService
 
         message.Subject = emailMessage.Subject;
 
-
-        var messageBody = string.Format(emailMessage.Subject, emailMessage.Content);
-
         message.Body = new TextPart(TextFormat.Html)
         {
-            Text = messageBody
+            Text = emailMessage.Content
         };
         using var emailClient = new SmtpClient();
         emailClient.Connect(

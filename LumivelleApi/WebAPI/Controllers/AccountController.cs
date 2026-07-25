@@ -4,11 +4,13 @@ using System.Threading.Tasks;
 using Business.Handlers.Accounts.Commands.ChangePassword;
 using Business.Handlers.Accounts.Commands.DeleteAccount;
 using Business.Handlers.Accounts.Commands.DeleteProfile;
+using Business.Handlers.Accounts.Commands.ForgotPassword;
 using Business.Handlers.Accounts.Commands.Login;
 using Business.Handlers.Accounts.Commands.RefreshToken;
 using Business.Handlers.Accounts.Commands.Register;
 using Business.Handlers.Accounts.Commands.RegisterFirebaseToken;
 using Business.Handlers.Accounts.Commands.ResetPassword;
+using Business.Handlers.Accounts.Commands.ResetPasswordWithCode;
 using Business.Handlers.Accounts.Commands.ResetTwoFactor;
 using Business.Handlers.Accounts.Commands.SetAccountFlags;
 using Business.Handlers.Accounts.Commands.SetupTwoFactor;
@@ -182,6 +184,42 @@ public class AccountController : BaseApiController
     [EnableRateLimiting(RateLimitPolicies.Auth)]
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommandRequest request)
+    {
+        var result = await Mediator.Send(request);
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>
+    /// Request a password reset code by email
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommandRequest request)
+    {
+        var result = await Mediator.Send(request);
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>
+    /// Reset account password using the code emailed via forgot-password
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IResult))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [HttpPost("reset-password-with-code")]
+    public async Task<IActionResult> ResetPasswordWithCode([FromBody] ResetPasswordWithCodeCommandRequest request)
     {
         var result = await Mediator.Send(request);
         return result.Success ? Ok(result) : BadRequest(result.Messages);
