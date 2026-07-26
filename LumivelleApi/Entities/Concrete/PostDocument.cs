@@ -11,5 +11,6 @@ public class PostDocument : DocumentDbEntity
     public ObjectId? WardrobeItemId { get; set; }
     public ObjectId? OutfitId { get; set; }
     public int LikeCount { get; set; }
+    public int SaveCount { get; set; }
     public int CommentCount { get; set; }
 }

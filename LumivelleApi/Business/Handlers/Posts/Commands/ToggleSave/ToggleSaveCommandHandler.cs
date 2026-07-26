@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Core.Constants;
-using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -16,8 +15,7 @@ namespace Business.Handlers.Posts.Commands.ToggleSave;
 
 public class ToggleSaveCommandHandler(
     IPostRepository postRepository,
-    ISavedPostRepository savedPostRepository,
-    IAccountRepository accountRepository)
+    ISavedPostRepository savedPostRepository)
     : IRequestHandler<ToggleSaveCommandRequest, IDataResult<ToggleSaveResult>>
 {
     [SecuredOperation(Priority = 1)]
@@ -26,11 +24,6 @@ public class ToggleSaveCommandHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
-        var account =
-            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
-        if (account == null)
-            throw new ApplicationException(Messages.AccountNotFound);
-
         var postId = ObjectId.Parse(request.PostId);
         var post = await postRepository.GetByIdAsync(postId);
 
@@ -43,6 +36,7 @@ public class ToggleSaveCommandHandler(
         if (existing != null)
         {
             await savedPostRepository.DeleteAsync(existing.Id, softDelete: false);
+            post.SaveCount = Math.Max(0, post.SaveCount - 1);
             isSaved = false;
         }
         else
@@ -59,6 +53,7 @@ public class ToggleSaveCommandHandler(
                     AccountId = accountId,
                     CollectionId = collectionId
                 });
+                post.SaveCount += 1;
                 isSaved = true;
             }
             catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
@@ -66,6 +61,8 @@ public class ToggleSaveCommandHandler(
                 isSaved = true;
             }
         }
+
+        await postRepository.UpdateAsync(post);
 
         return new SuccessDataResult<ToggleSaveResult>(new ToggleSaveResult { IsSavedByMe = isSaved });
     }
