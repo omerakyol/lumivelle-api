@@ -13,7 +13,7 @@ using MongoDB.Driver;
 
 namespace Business.Handlers.Follows.Commands.ToggleFollow;
 
-public class ToggleFollowCommandHandler(IFollowRepository followRepository)
+public class ToggleFollowCommandHandler(IFollowRepository followRepository, IAccountRepository accountRepository)
     : IRequestHandler<ToggleFollowCommandRequest, IDataResult<ToggleFollowResult>>
 {
     [SecuredOperation(Priority = 1)]
@@ -37,6 +37,10 @@ public class ToggleFollowCommandHandler(IFollowRepository followRepository)
         }
         else
         {
+            var followee = await accountRepository.GetByIdAsync(followeeId);
+            if (followee == null)
+                throw new ApplicationException(Messages.AccountNotFound);
+
             try
             {
                 await followRepository.AddAsync(new FollowDocument { FollowerId = accountId, FolloweeId = followeeId });
