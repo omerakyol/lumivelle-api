@@ -14,6 +14,8 @@ using Business.Handlers.Posts.Queries.GetFeed;
 using Business.Handlers.Posts.Queries.GetMyPosts;
 using Business.Handlers.Posts.Queries.GetPost;
 using Business.Handlers.Posts.Queries.GetSavedPosts;
+using Business.Handlers.Posts.Queries.GetStyleCategory;
+using Business.Handlers.Posts.Queries.GetTrendingStyles;
 using Core.Utilities.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -88,6 +90,28 @@ public class PostsController : BaseApiController
     public async Task<IActionResult> GetAccountPosts([FromRoute] string id, [FromQuery] string cursor = null)
     {
         return GetResponse(await Mediator.Send(new GetAccountPostsQueryRequest { AccountId = id, Cursor = cursor }));
+    }
+
+    /// <summary>Ranked style tags by aggregate saves within a time window</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<List<TrendResult>>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("trending")]
+    public async Task<IActionResult> GetTrendingStyles([FromQuery] string range = null)
+    {
+        return GetResponse(await Mediator.Send(new GetTrendingStylesQueryRequest { Range = range }));
+    }
+
+    /// <summary>Posts matching a style tag, newest first, with co-occurring secondary tags</summary>
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<StyleCategoryPageResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("style/{tag}")]
+    public async Task<IActionResult> GetStyleCategory(
+        [FromRoute] string tag, [FromQuery] string secondaryTag = null, [FromQuery] string cursor = null)
+    {
+        return GetResponse(await Mediator.Send(
+            new GetStyleCategoryQueryRequest { StyleTag = tag, SecondaryTag = secondaryTag, Cursor = cursor }));
     }
 
     /// <summary>Posts the current user has saved, newest-saved first</summary>
