@@ -63,4 +63,13 @@ public class PostRepository : MongoDbRepositoryBase<PostDocument>, IPostReposito
 
         return (int)await _collection.CountDocumentsAsync(filter);
     }
+
+    public async Task<List<PostDocument>> GetActiveInWindowAsync(DateTime? since)
+    {
+        var filter = Builders<PostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+        if (since.HasValue)
+            filter &= Builders<PostDocument>.Filter.Gte(x => x.CreatedAt, since.Value);
+
+        return await _collection.Find(filter).ToListAsync();
+    }
 }
