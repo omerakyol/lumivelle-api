@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Core.Constants;
+using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -15,7 +16,8 @@ namespace Business.Handlers.Posts.Commands.ToggleSave;
 
 public class ToggleSaveCommandHandler(
     IPostRepository postRepository,
-    ISavedPostRepository savedPostRepository)
+    ISavedPostRepository savedPostRepository,
+    IAccountRepository accountRepository)
     : IRequestHandler<ToggleSaveCommandRequest, IDataResult<ToggleSaveResult>>
 {
     [SecuredOperation(Priority = 1)]
@@ -24,6 +26,11 @@ public class ToggleSaveCommandHandler(
         CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();
+        var account =
+            await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
+        if (account == null)
+            throw new ApplicationException(Messages.AccountNotFound);
+
         var postId = ObjectId.Parse(request.PostId);
         var post = await postRepository.GetByIdAsync(postId);
 
