@@ -48,4 +48,5 @@ public class BeautyProfileDocument : DocumentDbEntity
     public string Headline { get; set; }
     public string Description { get; set; }
     public string RawAnalysisJson { get; set; }
+    public string PhotoUrl { get; set; }
 }

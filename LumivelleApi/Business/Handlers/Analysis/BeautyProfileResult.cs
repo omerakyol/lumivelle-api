@@ -24,6 +24,7 @@ public class BeautyProfileResult
     public string Headline { get; set; }
     public string Description { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string PhotoUrl { get; set; }
 
     public static BeautyProfileResult FromDocument(BeautyProfileDocument document)
     {
@@ -47,7 +48,8 @@ public class BeautyProfileResult
             StyleReferences = document.StyleReferences,
             Headline = document.Headline,
             Description = document.Description,
-            CreatedAt = document.CreatedAt
+            CreatedAt = document.CreatedAt,
+            PhotoUrl = document.PhotoUrl
         };
     }
 }

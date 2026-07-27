@@ -1,9 +1,10 @@
 using System;
-using System.IO; 
+using System.IO;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 using Business.Handlers.Analysis.ValidationRules;
+using Business.Handlers.Media;
 using Business.Services.Claude;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
@@ -12,7 +13,9 @@ using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
-using MediatR; 
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Business.Handlers.Analysis.Commands.Analyze;
 
@@ -40,7 +43,9 @@ public class ClaudeAnalysisDto
 public class AnalyzeCommandHandler(
     IBeautyProfileRepository beautyProfileRepository,
     IClaudeVisionService claudeVisionService,
-    IAccountRepository accountRepository)
+    IAccountRepository accountRepository,
+    IHttpContextAccessor httpContextAccessor,
+    IWebHostEnvironment webHostEnvironment)
     : IRequestHandler<AnalyzeCommandRequest, IDataResult<BeautyProfileResult>>
 {
     private static readonly JsonSerializerOptions JsonOptions =
@@ -100,13 +105,13 @@ public class AnalyzeCommandHandler(
             await accountRepository.GetAsync(x => x.Id == accountId && x.AccountStatus == AccountStatus.Active);
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
-        
+
         await using var memoryStream = new MemoryStream();
         await request.File.CopyToAsync(memoryStream, cancellationToken);
         var imageBytes = memoryStream.ToArray();
 
         request.File.OpenReadStream().Position = 0;
-        
+
         var mediaType = GetMediaType(request.File.FileName);
 
         var raw = await claudeVisionService.AnalyzeImageAsync(
@@ -115,6 +120,12 @@ public class AnalyzeCommandHandler(
         var json = ExtractJson(raw);
         var parsed = JsonSerializer.Deserialize<ClaudeAnalysisDto>(json, JsonOptions)
                      ?? throw new ApplicationException("Claude returned unparseable analysis JSON");
+
+        request.File.OpenReadStream().Position = 0;
+
+        var mediaFolder = Path.Combine(webHostEnvironment.WebRootPath, "media");
+        var saved = await MediaStorage.SaveFileAsync(
+            request.File, mediaFolder, httpContextAccessor.HttpContext?.Request, cancellationToken);
 
         var document = new BeautyProfileDocument
         {
@@ -136,7 +147,8 @@ public class AnalyzeCommandHandler(
             StyleReferences = parsed.StyleReferences ?? [],
             Headline = parsed.Headline,
             Description = parsed.Description,
-            RawAnalysisJson = json
+            RawAnalysisJson = json,
+            PhotoUrl = saved.FileUrl
         };
 
         await beautyProfileRepository.AddAsync(document);
