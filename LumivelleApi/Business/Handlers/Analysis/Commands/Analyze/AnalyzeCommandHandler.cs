@@ -110,8 +110,6 @@ public class AnalyzeCommandHandler(
         await request.File.CopyToAsync(memoryStream, cancellationToken);
         var imageBytes = memoryStream.ToArray();
 
-        request.File.OpenReadStream().Position = 0;
-
         var mediaType = GetMediaType(request.File.FileName);
 
         var raw = await claudeVisionService.AnalyzeImageAsync(
@@ -120,8 +118,6 @@ public class AnalyzeCommandHandler(
         var json = ExtractJson(raw);
         var parsed = JsonSerializer.Deserialize<ClaudeAnalysisDto>(json, JsonOptions)
                      ?? throw new ApplicationException("Claude returned unparseable analysis JSON");
-
-        request.File.OpenReadStream().Position = 0;
 
         var mediaFolder = Path.Combine(webHostEnvironment.WebRootPath, "media");
         var saved = await MediaStorage.SaveFileAsync(
