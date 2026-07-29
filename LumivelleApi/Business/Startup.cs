@@ -106,6 +106,7 @@ public partial class BusinessStartup(IConfiguration configuration, IHostEnvironm
         services.AddScoped<ISavedPostRepository, SavedPostRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
         services.AddScoped<IFollowRepository, FollowRepository>();
+        services.AddScoped<IShadeRepository, ShadeRepository>();
 
         services.AddHttpClient("claude", client => client.Timeout = TimeSpan.FromSeconds(60));
         services.AddScoped<IClaudeVisionService, ClaudeVisionService>();
