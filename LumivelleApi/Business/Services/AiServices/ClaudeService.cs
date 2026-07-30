@@ -13,8 +13,6 @@ public class ClaudeService(AnthropicClient anthropicClient, IConfiguration confi
         string userPrompt, CancellationToken cancellationToken)
     {
         var options = configuration.GetSection("ClaudeOptions").Get<AiServiceOptions>() ?? new AiServiceOptions();
-        if (string.IsNullOrWhiteSpace(options.ApiKey))
-            throw new ApplicationException("ClaudeOptions:ApiKey is not configured");
 
         var (compressedBytes, compressedMediaType) =
             await AiImageCompressor.CompressAsync(imageBytes, cancellationToken);
@@ -54,8 +52,6 @@ public class ClaudeService(AnthropicClient anthropicClient, IConfiguration confi
         CancellationToken cancellationToken)
     {
         var options = configuration.GetSection("ClaudeOptions").Get<AiServiceOptions>() ?? new AiServiceOptions();
-        if (string.IsNullOrWhiteSpace(options.ApiKey))
-            throw new ApplicationException("ClaudeOptions:ApiKey is not configured");
 
         var parameters = new MessageParameters
         {

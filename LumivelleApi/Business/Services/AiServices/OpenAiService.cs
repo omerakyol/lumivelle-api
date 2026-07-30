@@ -13,8 +13,6 @@ public class OpenAiService(OpenAIClient openAiClient, IConfiguration configurati
         string userPrompt, CancellationToken cancellationToken)
     {
         var options = configuration.GetSection("OpenAiOptions").Get<AiServiceOptions>() ?? new AiServiceOptions();
-        if (string.IsNullOrWhiteSpace(options.ApiKey))
-            throw new ApplicationException("OpenAiOptions:ApiKey is not configured");
 
         var (compressedBytes, compressedMediaType) =
             await AiImageCompressor.CompressAsync(imageBytes, cancellationToken);
@@ -47,8 +45,6 @@ public class OpenAiService(OpenAIClient openAiClient, IConfiguration configurati
         CancellationToken cancellationToken)
     {
         var options = configuration.GetSection("OpenAiOptions").Get<AiServiceOptions>() ?? new AiServiceOptions();
-        if (string.IsNullOrWhiteSpace(options.ApiKey))
-            throw new ApplicationException("OpenAiOptions:ApiKey is not configured");
         var response = await openAiClient.GetResponsesClient().CreateResponseAsync(
             new CreateResponseOptions
             {
