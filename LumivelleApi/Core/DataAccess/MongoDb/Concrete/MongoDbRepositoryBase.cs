@@ -237,18 +237,30 @@ public abstract class MongoDbRepositoryBase<T> : IDocumentDbRepository<T>
     {
         var options = new BulkWriteOptions { IsOrdered = false, BypassDocumentValidation = false };
         var documentDbEntities = entities.ToList();
-        foreach (var entity in documentDbEntities) entity.CreatedBy = UserInfoExtensions.GetAccountId();
+        foreach (var entity in documentDbEntities)
+        {
+            entity.Id = ObjectId.GenerateNewId();
+            entity.Status = EntityStatus.Active;
+            entity.CreatedBy = UserInfoExtensions.GetAccountId();
+        }
 
-        _collection.BulkWriteAsync((IEnumerable<WriteModel<T>>)documentDbEntities, options);
+        var writeModels = documentDbEntities.Select(entity => new InsertOneModel<T>(entity)).ToList();
+        _collection.BulkWriteAsync(writeModels, options).GetAwaiter().GetResult();
     }
 
     public virtual async Task AddManyAsync(IEnumerable<T> entities)
     {
         var options = new BulkWriteOptions { IsOrdered = false, BypassDocumentValidation = false };
         var dbEntities = entities.ToList();
-        foreach (var entity in dbEntities) entity.CreatedBy = UserInfoExtensions.GetAccountId();
+        foreach (var entity in dbEntities)
+        {
+            entity.Id = ObjectId.GenerateNewId();
+            entity.Status = EntityStatus.Active;
+            entity.CreatedBy = UserInfoExtensions.GetAccountId();
+        }
 
-        await _collection.BulkWriteAsync((IEnumerable<WriteModel<T>>)dbEntities, options);
+        var writeModels = dbEntities.Select(entity => new InsertOneModel<T>(entity)).ToList();
+        await _collection.BulkWriteAsync(writeModels, options);
     }
 
     public async Task UpdateManyAsync(Expression<Func<T, bool>> filter, UpdateDefinition<T> update)
