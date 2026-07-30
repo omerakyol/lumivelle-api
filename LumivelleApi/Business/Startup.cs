@@ -110,6 +110,7 @@ public class BusinessStartup(IConfiguration configuration, IHostEnvironment host
         services.AddScoped<ICollectionRepository, CollectionRepository>();
         services.AddScoped<IFollowRepository, FollowRepository>();
         services.AddScoped<IMediaFileRepository, MediaFileRepository>();
+        services.AddScoped<IShadeRepository, ShadeRepository>();
 
         services.AddSingleton(p =>
         {

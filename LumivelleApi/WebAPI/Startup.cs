@@ -20,6 +20,7 @@ using Core.Utilities.Security.Jwt;
 using Core.Utilities.TaskScheduler.Hangfire;
 using Core.Utilities.TaskScheduler.Hangfire.Models;
 using Core.Utilities.Transformers;
+using DataAccess.Abstract;
 using Hangfire;
 using HangfireBasicAuthenticationFilter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -214,6 +215,19 @@ public partial class Startup : BusinessStartup
         // VERY IMPORTANT. Since we removed the build from AddDependencyResolvers, let's set the Service provider manually.
         // By the way, we can construct with DI by taking type to avoid calling static methods in aspects.
         ServiceTool.ServiceProvider = app.ApplicationServices;
+
+        using (var seedScope = app.ApplicationServices.CreateScope())
+        {
+            var shadeRepository = seedScope.ServiceProvider.GetRequiredService<IShadeRepository>();
+            var existingCount = shadeRepository.CountAsync(_ => true).GetAwaiter().GetResult();
+            if (existingCount == 0)
+            {
+                foreach (var shade in Business.Handlers.Shades.ShadeSeedData.All())
+                {
+                    shadeRepository.AddAsync(shade).GetAwaiter().GetResult();
+                }
+            }
+        }
 
         var configurationManager = app.ApplicationServices.GetService<ConfigurationManager>();
         switch (configurationManager.Mode)
