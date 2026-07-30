@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.DataAccess.MongoDb.Concrete;
 using Core.Enums;
+using Core.Entities.Concrete;
 using DataAccess.Abstract;
 using DataAccess.Concrete.MongoDb.Context;
-using Entities.Concrete;
 using MongoDB.Driver;
 
 namespace DataAccess.Concrete.MongoDb;
