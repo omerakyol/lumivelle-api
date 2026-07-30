@@ -1,6 +1,8 @@
+using Core.Entities.Concrete;
+
 namespace Business.Handlers.Wardrobe.Queries.GetPaletteGaps;
 
 public class PaletteGapResult
 {
-    public string Color { get; set; }
+    public ColorSwatch Color { get; set; }
 }

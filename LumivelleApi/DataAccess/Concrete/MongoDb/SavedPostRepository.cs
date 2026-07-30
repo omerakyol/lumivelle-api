@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.DataAccess.MongoDb.Concrete;
+using Core.Entities.Concrete;
 using Core.Enums;
 using DataAccess.Abstract;
 using DataAccess.Concrete.MongoDb.Context;
-using Entities.Concrete;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -20,21 +20,11 @@ public class SavedPostRepository : MongoDbRepositoryBase<SavedPostDocument>, ISa
         CreateIndexes();
     }
 
-    private void CreateIndexes()
-    {
-        var indexKeys = Builders<SavedPostDocument>.IndexKeys
-            .Ascending(x => x.PostId)
-            .Ascending(x => x.AccountId);
-
-        _collection.Indexes.CreateOne(
-            new CreateIndexModel<SavedPostDocument>(indexKeys, new CreateIndexOptions { Unique = true }));
-    }
-
     public async Task<SavedPostDocument> GetAsync(ObjectId postId, ObjectId accountId)
     {
         var filter = Builders<SavedPostDocument>.Filter.Eq(x => x.PostId, postId)
-            & Builders<SavedPostDocument>.Filter.Eq(x => x.AccountId, accountId)
-            & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+                     & Builders<SavedPostDocument>.Filter.Eq(x => x.AccountId, accountId)
+                     & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
 
         return await _collection.Find(filter).FirstOrDefaultAsync();
     }
@@ -47,8 +37,8 @@ public class SavedPostRepository : MongoDbRepositoryBase<SavedPostDocument>, ISa
             return [];
 
         var filter = Builders<SavedPostDocument>.Filter.Eq(x => x.AccountId, accountId)
-            & Builders<SavedPostDocument>.Filter.In(x => x.PostId, idList)
-            & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+                     & Builders<SavedPostDocument>.Filter.In(x => x.PostId, idList)
+                     & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
 
         return await _collection.Find(filter).ToListAsync();
     }
@@ -57,7 +47,7 @@ public class SavedPostRepository : MongoDbRepositoryBase<SavedPostDocument>, ISa
         ObjectId accountId, DateTime? cursor, int pageSize)
     {
         var filter = Builders<SavedPostDocument>.Filter.Eq(x => x.AccountId, accountId)
-            & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+                     & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
         if (cursor.HasValue)
             filter &= Builders<SavedPostDocument>.Filter.Lt(x => x.CreatedAt, cursor.Value);
 
@@ -77,8 +67,8 @@ public class SavedPostRepository : MongoDbRepositoryBase<SavedPostDocument>, ISa
         ObjectId accountId, ObjectId? collectionId, DateTime? cursor, int pageSize)
     {
         var filter = Builders<SavedPostDocument>.Filter.Eq(x => x.AccountId, accountId)
-            & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active)
-            & Builders<SavedPostDocument>.Filter.Eq(x => x.CollectionId, collectionId);
+                     & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active)
+                     & Builders<SavedPostDocument>.Filter.Eq(x => x.CollectionId, collectionId);
         if (cursor.HasValue)
             filter &= Builders<SavedPostDocument>.Filter.Lt(x => x.CreatedAt, cursor.Value);
 
@@ -91,8 +81,8 @@ public class SavedPostRepository : MongoDbRepositoryBase<SavedPostDocument>, ISa
     public async Task<int> CountByAccountAndCollectionAsync(ObjectId accountId, ObjectId? collectionId)
     {
         var filter = Builders<SavedPostDocument>.Filter.Eq(x => x.AccountId, accountId)
-            & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active)
-            & Builders<SavedPostDocument>.Filter.Eq(x => x.CollectionId, collectionId);
+                     & Builders<SavedPostDocument>.Filter.Eq(x => x.Status, EntityStatus.Active)
+                     & Builders<SavedPostDocument>.Filter.Eq(x => x.CollectionId, collectionId);
 
         return (int)await _collection.CountDocumentsAsync(filter);
     }
@@ -102,5 +92,15 @@ public class SavedPostRepository : MongoDbRepositoryBase<SavedPostDocument>, ISa
         var filter = Builders<SavedPostDocument>.Filter.Eq(x => x.CollectionId, collectionId);
         var update = Builders<SavedPostDocument>.Update.Set(x => x.CollectionId, null);
         await _collection.UpdateManyAsync(filter, update);
+    }
+
+    private void CreateIndexes()
+    {
+        var indexKeys = Builders<SavedPostDocument>.IndexKeys
+            .Ascending(x => x.PostId)
+            .Ascending(x => x.AccountId);
+
+        _collection.Indexes.CreateOne(
+            new CreateIndexModel<SavedPostDocument>(indexKeys, new CreateIndexOptions { Unique = true }));
     }
 }

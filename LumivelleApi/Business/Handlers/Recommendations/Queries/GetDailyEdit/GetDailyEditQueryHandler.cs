@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Business.Handlers.Recommendations.ValidationRules;
 using Business.Handlers.Wardrobe;
-using Business.Services.Claude;
+using Business.Services.AiServices;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
+using MongoDB.Bson;
 
 namespace Business.Handlers.Recommendations.Queries.GetDailyEdit;
 
@@ -30,24 +30,24 @@ public class GetDailyEditQueryHandler(
     IBeautyProfileRepository beautyProfileRepository,
     IWardrobeItemRepository wardrobeItemRepository,
     IDailyRecommendationRepository dailyRecommendationRepository,
-    IClaudeVisionService claudeVisionService,
+    IAiServiceFactory aiServiceFactory,
     IAccountRepository accountRepository)
     : IRequestHandler<GetDailyEditQueryRequest, IDataResult<DailyEditResult>>
 {
+    private const string SystemPrompt = """
+                                        You are a beauty editor writing one day's personalised recommendation copy for a user. Return a JSON object with these exact fields:
+
+                                        {
+                                          "dailyEditTitle": string,      // short poetic title, e.g. "Golden hour glow"
+                                          "dailyEditSubtitle": string,   // one descriptive sentence
+                                          "makeupRecTitles": string[]    // exactly 3 short makeup look titles
+                                        }
+
+                                        Return only valid JSON. No markdown, no explanation.
+                                        """;
+
     private static readonly JsonSerializerOptions JsonOptions =
         new() { PropertyNameCaseInsensitive = true };
-
-    private const string SystemPrompt = """
-        You are a beauty editor writing one day's personalised recommendation copy for a user. Return a JSON object with these exact fields:
-
-        {
-          "dailyEditTitle": string,      // short poetic title, e.g. "Golden hour glow"
-          "dailyEditSubtitle": string,   // one descriptive sentence
-          "makeupRecTitles": string[]    // exactly 3 short makeup look titles
-        }
-
-        Return only valid JSON. No markdown, no explanation.
-        """;
 
     [ValidationAspect(typeof(GetDailyEditValidator), Priority = 2)]
     public async Task<IDataResult<DailyEditResult>> Handle(
@@ -69,17 +69,19 @@ public class GetDailyEditQueryHandler(
             throw new ApplicationException(Messages.BeautyProfileNotFound);
 
         var items = await wardrobeItemRepository.GetByAccountIdAsync(accountId, null);
-        var outfitRec = BuildOutfitRec(items, profile.Palette);
+        var paletteHex = profile.Palette?.Select(c => c.Hex).ToArray() ?? [];
+        var outfitRec = BuildOutfitRec(items, paletteHex);
 
         ClaudeDailyEditDto copy;
         var shouldCache = true;
         try
         {
-            var userPrompt = $"Season: {profile.Season}. Palette: {string.Join(", ", profile.Palette)}.";
-            var raw = await claudeVisionService.AnalyzeTextAsync(SystemPrompt, userPrompt, cancellationToken);
+            var userPrompt = $"Season: {profile.Season}. Palette: {string.Join(", ", paletteHex)}.";
+            var aiService = aiServiceFactory.Get(AiProvider.OpenAi);
+            var raw = await aiService.AnalyzeTextAsync(SystemPrompt, userPrompt, cancellationToken);
             var json = ExtractJson(raw);
             copy = JsonSerializer.Deserialize<ClaudeDailyEditDto>(json, JsonOptions)
-                   ?? throw new ApplicationException("Claude returned unparseable daily-edit JSON");
+                   ?? throw new ApplicationException("AiServices returned unparseable daily-edit JSON");
         }
         catch (Exception)
         {
@@ -90,7 +92,7 @@ public class GetDailyEditQueryHandler(
         var result = new DailyEditResult
         {
             Season = profile.Season,
-            Palette = profile.Palette,
+            Palette = paletteHex,
             DailyEdit = new DailyEditItem
             {
                 Title = copy.DailyEditTitle,
@@ -133,7 +135,7 @@ public class GetDailyEditQueryHandler(
                     ImageUrl = result.OutfitRec.ImageUrl,
                     WardrobeItemId = string.IsNullOrEmpty(result.OutfitRec.WardrobeItemId)
                         ? null
-                        : MongoDB.Bson.ObjectId.Parse(result.OutfitRec.WardrobeItemId)
+                        : ObjectId.Parse(result.OutfitRec.WardrobeItemId)
                 },
                 Trending = result.Trending
                     .Select(t => new TrendingItemValue { Title = t.Title, ImageUrl = t.ImageUrl })
@@ -165,8 +167,8 @@ public class GetDailyEditQueryHandler(
             .Select(item => (
                 Item: item,
                 Score: PaletteMatching.ScoreColorsAgainstPalette(item.Colors, palette)
-                    + (item.IsFavorite ? 5 : 0)
-                    + (item.LastWornAt == null || item.LastWornAt < DateTime.UtcNow.AddDays(-14) ? 5 : 0)))
+                       + (item.IsFavorite ? 5 : 0)
+                       + (item.LastWornAt == null || item.LastWornAt < DateTime.UtcNow.AddDays(-14) ? 5 : 0)))
             .OrderByDescending(x => x.Score)
             .ToList();
 
@@ -256,7 +258,7 @@ public class GetDailyEditQueryHandler(
         var start = raw.IndexOf('{');
         var end = raw.LastIndexOf('}');
         if (start < 0 || end <= start)
-            throw new ApplicationException("Claude response contained no JSON object");
+            throw new ApplicationException("AiServices response contained no JSON object");
         return raw.Substring(start, end - start + 1);
     }
 }

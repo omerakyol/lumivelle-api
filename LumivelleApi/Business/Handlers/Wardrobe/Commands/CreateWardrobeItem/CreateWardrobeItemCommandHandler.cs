@@ -1,15 +1,15 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Business.Handlers.Wardrobe.ValidationRules;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 
 namespace Business.Handlers.Wardrobe.Commands.CreateWardrobeItem;
@@ -32,7 +32,7 @@ public class CreateWardrobeItemCommandHandler(
             throw new ApplicationException(Messages.AccountNotFound);
 
         var profile = await beautyProfileRepository.GetLatestByAccountIdAsync(accountId);
-        var palette = profile?.Palette ?? [];
+        var palette = profile?.Palette?.Select(c => c.Hex).ToArray() ?? [];
 
         var document = new WardrobeItemDocument
         {

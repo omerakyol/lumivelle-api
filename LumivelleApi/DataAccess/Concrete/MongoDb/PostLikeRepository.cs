@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.DataAccess.MongoDb.Concrete;
+using Core.Entities.Concrete;
 using Core.Enums;
 using DataAccess.Abstract;
 using DataAccess.Concrete.MongoDb.Context;
-using Entities.Concrete;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -19,21 +19,11 @@ public class PostLikeRepository : MongoDbRepositoryBase<PostLikeDocument>, IPost
         CreateIndexes();
     }
 
-    private void CreateIndexes()
-    {
-        var indexKeys = Builders<PostLikeDocument>.IndexKeys
-            .Ascending(x => x.PostId)
-            .Ascending(x => x.AccountId);
-
-        _collection.Indexes.CreateOne(
-            new CreateIndexModel<PostLikeDocument>(indexKeys, new CreateIndexOptions { Unique = true }));
-    }
-
     public async Task<PostLikeDocument> GetAsync(ObjectId postId, ObjectId accountId)
     {
         var filter = Builders<PostLikeDocument>.Filter.Eq(x => x.PostId, postId)
-            & Builders<PostLikeDocument>.Filter.Eq(x => x.AccountId, accountId)
-            & Builders<PostLikeDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+                     & Builders<PostLikeDocument>.Filter.Eq(x => x.AccountId, accountId)
+                     & Builders<PostLikeDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
 
         return await _collection.Find(filter).FirstOrDefaultAsync();
     }
@@ -46,8 +36,8 @@ public class PostLikeRepository : MongoDbRepositoryBase<PostLikeDocument>, IPost
             return [];
 
         var filter = Builders<PostLikeDocument>.Filter.Eq(x => x.AccountId, accountId)
-            & Builders<PostLikeDocument>.Filter.In(x => x.PostId, idList)
-            & Builders<PostLikeDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
+                     & Builders<PostLikeDocument>.Filter.In(x => x.PostId, idList)
+                     & Builders<PostLikeDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
 
         return await _collection.Find(filter).ToListAsync();
     }
@@ -56,5 +46,15 @@ public class PostLikeRepository : MongoDbRepositoryBase<PostLikeDocument>, IPost
     {
         var filter = Builders<PostLikeDocument>.Filter.Eq(x => x.PostId, postId);
         await _collection.DeleteManyAsync(filter);
+    }
+
+    private void CreateIndexes()
+    {
+        var indexKeys = Builders<PostLikeDocument>.IndexKeys
+            .Ascending(x => x.PostId)
+            .Ascending(x => x.AccountId);
+
+        _collection.Indexes.CreateOne(
+            new CreateIndexModel<PostLikeDocument>(indexKeys, new CreateIndexOptions { Unique = true }));
     }
 }

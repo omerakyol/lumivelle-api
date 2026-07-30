@@ -1,13 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -41,7 +40,7 @@ public class ToggleLikeCommandHandler(
 
         if (existing != null)
         {
-            await postLikeRepository.DeleteAsync(existing.Id, softDelete: false);
+            await postLikeRepository.DeleteAsync(existing.Id, false);
             post.LikeCount = Math.Max(0, post.LikeCount - 1);
             isLiked = false;
         }

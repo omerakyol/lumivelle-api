@@ -38,7 +38,7 @@ public class GetPaletteGapsQueryHandler(
         var wardrobeColors = items.SelectMany(i => i.Colors).ToList();
 
         var gaps = profile.Palette
-            .Where(color => !PaletteMatching.IsColorCoveredByWardrobe(color, wardrobeColors))
+            .Where(color => !PaletteMatching.IsColorCoveredByWardrobe(color.Hex, wardrobeColors))
             .Select(color => new PaletteGapResult { Color = color })
             .ToList();
 

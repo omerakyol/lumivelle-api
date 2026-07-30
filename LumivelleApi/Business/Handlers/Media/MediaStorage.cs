@@ -28,7 +28,19 @@ public static class MediaStorage
         }
 
         var fileInfo = new FileInfo(finalPath);
+        var fileUrl = $"{BuildBaseUrl(httpRequest)}/media/{fileName}";
 
+        return new UploadFileCommandResult
+        {
+            ContentType = GetContentType(fileInfo.Extension),
+            ContentLength = fileInfo.Length,
+            FileName = fileName,
+            FileUrl = fileUrl
+        };
+    }
+
+    public static string BuildBaseUrl(HttpRequest httpRequest)
+    {
         var scheme =
             httpRequest?.Headers["X-Forwarded-Proto"].FirstOrDefault()
             ?? httpRequest?.Headers["X-Forwarded-Scheme"].FirstOrDefault()
@@ -40,16 +52,7 @@ public static class MediaStorage
             scheme = "https";
         }
 
-        var baseUrl = $"{scheme}://{httpRequest?.Host.Value}";
-        var fileUrl = $"{baseUrl}/media/{fileName}";
-
-        return new UploadFileCommandResult
-        {
-            ContentType = GetContentType(fileInfo.Extension),
-            ContentLength = fileInfo.Length,
-            FileName = fileName,
-            FileUrl = fileUrl
-        };
+        return $"{scheme}://{httpRequest?.Host.Value}";
     }
 
     private static string GetContentType(string extension) =>

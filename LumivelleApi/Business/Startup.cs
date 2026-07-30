@@ -3,8 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
+using Anthropic.SDK;
 using Business.Helpers;
-using Business.Services.Claude;
+using Business.Services.AiServices;
 using Core.Constants;
 using Core.CrossCuttingConcerns.Logging.Serilog.Loggers;
 using Core.DataAccess.MongoDb.Concrete.Configurations;
@@ -32,20 +33,22 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Bson.Serialization.Conventions;
+using OpenAI;
 
 namespace Business;
 
-public partial class BusinessStartup(IConfiguration configuration, IHostEnvironment hostEnvironment)
+public class BusinessStartup(IConfiguration configuration, IHostEnvironment hostEnvironment)
 {
     protected IConfiguration Configuration { get; } = configuration;
 
     protected IHostEnvironment HostEnvironment { get; } = hostEnvironment;
 
     /// <summary>
-    /// This method gets called by the runtime. Use this method to add services to the container.
+    ///     This method gets called by the runtime. Use this method to add services to the container.
     /// </summary>
     /// <remarks>
-    /// It is common to all configurations and must be called. Aspnet core does not call this method because there are other methods.
+    ///     It is common to all configurations and must be called. Aspnet core does not call this method because there are
+    ///     other methods.
     /// </remarks>
     /// <param name="services"></param>
     public virtual void ConfigureServices(IServiceCollection services)
@@ -106,9 +109,25 @@ public partial class BusinessStartup(IConfiguration configuration, IHostEnvironm
         services.AddScoped<ISavedPostRepository, SavedPostRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
         services.AddScoped<IFollowRepository, FollowRepository>();
+        services.AddScoped<IMediaFileRepository, MediaFileRepository>();
 
-        services.AddHttpClient("claude", client => client.Timeout = TimeSpan.FromSeconds(60));
-        services.AddScoped<IClaudeVisionService, ClaudeVisionService>();
+        services.AddSingleton(p =>
+        {
+            var config = p.GetRequiredService<IConfiguration>();
+            var options = config.GetSection("OpenAiOptions").Get<AiServiceOptions>()!;
+            return new OpenAIClient(options.ApiKey);
+        });
+
+        services.AddSingleton(p =>
+        {
+            var config = p.GetRequiredService<IConfiguration>();
+            var options = config.GetSection("ClaudeOptions").Get<AiServiceOptions>()!;
+            return new AnthropicClient(options.ApiKey);
+        });
+
+        services.AddTransient<OpenAiService>();
+        services.AddTransient<ClaudeService>();
+        services.AddTransient<IAiServiceFactory, AiServiceFactory>();
 
         var taskSchedulerConfig = Configuration.GetSection("TaskSchedulerOptions").Get<TaskSchedulerConfig>();
         if (taskSchedulerConfig.Enabled)
@@ -140,7 +159,7 @@ public partial class BusinessStartup(IConfiguration configuration, IHostEnvironm
                                 Prefix = "hangfire",
                                 CheckConnection = true,
                                 JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5)
                             });
 
                         break;

@@ -1,12 +1,17 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Business.Handlers.Accounts.Commands.UploadFile;
 using Business.Handlers.Media.Commands.UploadBatch;
+using Core.Extensions;
 using Core.Utilities.Results;
+using DataAccess.Abstract;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
+using MongoDB.Driver.GridFS;
 
 namespace WebAPI.Controllers;
 
@@ -18,12 +23,14 @@ namespace WebAPI.Controllers;
 public class MediaController : BaseApiController
 {
     private readonly string _mediaFolder;
+    private readonly IMediaFileRepository _mediaFileRepository;
 
-    public MediaController(IWebHostEnvironment env)
+    public MediaController(IWebHostEnvironment env, IMediaFileRepository mediaFileRepository)
     {
         _mediaFolder = Path.Combine(env.WebRootPath, "media");
         if (!Directory.Exists(_mediaFolder))
             Directory.CreateDirectory(_mediaFolder);
+        _mediaFileRepository = mediaFileRepository;
     }
 
     /// <summary>Upload an image and get back its public URL</summary>
@@ -52,5 +59,41 @@ public class MediaController : BaseApiController
         var result = await Mediator.Send(new UploadBatchCommandRequest
             { Files = files, FolderPath = _mediaFolder });
         return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>
+    /// Stream a file stored in MongoDB GridFS (e.g. a beauty-profile photo) by its id.
+    /// Requires auth; only the account that owns the file (if any owner was recorded) may fetch it.
+    /// </summary>
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpGet("gridfs/{id}")]
+    public async Task<IActionResult> GetGridFsFile(string id, CancellationToken cancellationToken)
+    {
+        if (!ObjectId.TryParse(id, out var objectId))
+            return NotFound();
+
+        try
+        {
+            var (stream, contentType, fileName, length, ownerId) =
+                await _mediaFileRepository.OpenDownloadStreamAsync(objectId, cancellationToken);
+
+            if (ownerId.HasValue && ownerId.Value != UserInfoExtensions.GetAccountId())
+            {
+                await stream.DisposeAsync();
+                return Forbidden<object>(null);
+            }
+
+            Response.Headers.CacheControl = "private, max-age=31536000, immutable";
+            Response.ContentLength = length;
+
+            return File(stream, contentType, fileName);
+        }
+        catch (GridFSFileNotFoundException)
+        {
+            return NotFound();
+        }
     }
 }

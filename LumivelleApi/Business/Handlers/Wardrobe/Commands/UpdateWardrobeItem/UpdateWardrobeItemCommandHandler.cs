@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
@@ -38,7 +39,7 @@ public class UpdateWardrobeItemCommandHandler(
             throw new ApplicationException(Messages.WardrobeItemNotFound);
 
         var profile = await beautyProfileRepository.GetLatestByAccountIdAsync(accountId);
-        var palette = profile?.Palette ?? [];
+        var palette = profile?.Palette?.Select(c => c.Hex).ToArray() ?? [];
 
         document.Name = request.Name;
         document.Category = request.Category;

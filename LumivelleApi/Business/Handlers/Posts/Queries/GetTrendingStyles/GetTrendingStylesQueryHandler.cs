@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
+using Core.Entities.Concrete;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 using MongoDB.Bson;
 
@@ -49,7 +49,8 @@ public class GetTrendingStylesQueryHandler(
             ? posts.Where(p => p.CreatedAt < currentWindowStart.Value).ToList()
             : [];
 
-        var tagsByPostId = await PostStyleTagResolver.GetTagsByPostIdAsync(posts, wardrobeItemRepository, outfitRepository);
+        var tagsByPostId =
+            await PostStyleTagResolver.GetTagsByPostIdAsync(posts, wardrobeItemRepository, outfitRepository);
 
         var currentTotals = SumSavesByTag(currentPosts, tagsByPostId);
         var priorTotals = SumSavesByTag(priorPosts, tagsByPostId);
@@ -61,7 +62,9 @@ public class GetTrendingStylesQueryHandler(
             {
                 StyleTag = kv.Key,
                 TotalSaves = kv.Value,
-                DeltaPercent = currentWindowStart.HasValue ? ComputeDeltaPercent(kv.Value, priorTotals.GetValueOrDefault(kv.Key)) : 0
+                DeltaPercent = currentWindowStart.HasValue
+                    ? ComputeDeltaPercent(kv.Value, priorTotals.GetValueOrDefault(kv.Key))
+                    : 0
             })
             .ToList();
 

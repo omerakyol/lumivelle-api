@@ -1,23 +1,18 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.DataAccess.MongoDb.Concrete;
+using Core.Entities.Concrete;
 using Core.Enums;
 using DataAccess.Abstract;
 using DataAccess.Concrete.MongoDb.Context;
-using Entities.Concrete;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace DataAccess.Concrete.MongoDb;
 
-public class BeautyProfileRepository
-    : MongoDbRepositoryBase<BeautyProfileDocument>, IBeautyProfileRepository
+public class BeautyProfileRepository(MongoDbContext context)
+    : MongoDbRepositoryBase<BeautyProfileDocument>(context.MongoConnectionSettings), IBeautyProfileRepository
 {
-    public BeautyProfileRepository(MongoDbContext context)
-        : base(context.MongoConnectionSettings)
-    {
-    }
-
     public async Task<BeautyProfileDocument> GetLatestByAccountIdAsync(ObjectId accountId)
     {
         return await _collection

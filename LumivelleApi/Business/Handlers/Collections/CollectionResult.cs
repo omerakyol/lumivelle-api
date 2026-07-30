@@ -1,4 +1,4 @@
-using Entities.Concrete;
+using Core.Entities.Concrete;
 
 namespace Business.Handlers.Collections;
 

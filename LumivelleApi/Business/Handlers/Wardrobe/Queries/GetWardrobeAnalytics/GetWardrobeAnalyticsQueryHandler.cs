@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 
 namespace Business.Handlers.Wardrobe.Queries.GetWardrobeAnalytics;
@@ -49,21 +48,15 @@ public class GetWardrobeAnalyticsQueryHandler(
         var buckets = new List<(string Hex, int TotalWear)>();
 
         foreach (var item in items)
+        foreach (var color in item.Colors)
         {
-            foreach (var color in item.Colors)
-            {
-                var index = buckets.FindIndex(b =>
-                    PaletteMatching.ScoreColorAgainstPalette(color, [b.Hex]) >= PaletteMatching.CoverageThreshold);
+            var index = buckets.FindIndex(b =>
+                PaletteMatching.ScoreColorAgainstPalette(color, [b.Hex]) >= PaletteMatching.CoverageThreshold);
 
-                if (index >= 0)
-                {
-                    buckets[index] = (buckets[index].Hex, buckets[index].TotalWear + item.WearCount);
-                }
-                else
-                {
-                    buckets.Add((color, item.WearCount));
-                }
-            }
+            if (index >= 0)
+                buckets[index] = (buckets[index].Hex, buckets[index].TotalWear + item.WearCount);
+            else
+                buckets.Add((color, item.WearCount));
         }
 
         var top = buckets.OrderByDescending(b => b.TotalWear).Take(4).ToList();
@@ -84,10 +77,7 @@ public class GetWardrobeAnalyticsQueryHandler(
     {
         var counts = new Dictionary<string, int>();
 
-        foreach (var tag in items.SelectMany(i => i.StyleTags))
-        {
-            counts[tag] = counts.GetValueOrDefault(tag) + 1;
-        }
+        foreach (var tag in items.SelectMany(i => i.StyleTags)) counts[tag] = counts.GetValueOrDefault(tag) + 1;
 
         var top = counts.OrderByDescending(kv => kv.Value).Take(4).ToList();
         if (top.Count == 0)
@@ -118,11 +108,14 @@ public class GetWardrobeAnalyticsQueryHandler(
         return seasons.Select(s => new SeasonUsageResult { Season = s, Count = counts[s] }).ToList();
     }
 
-    private static string ToSeason(int month) => month switch
+    private static string ToSeason(int month)
     {
-        3 or 4 or 5 => "Spring",
-        6 or 7 or 8 => "Summer",
-        9 or 10 or 11 => "Autumn",
-        _ => "Winter"
-    };
+        return month switch
+        {
+            3 or 4 or 5 => "Spring",
+            6 or 7 or 8 => "Summer",
+            9 or 10 or 11 => "Autumn",
+            _ => "Winter"
+        };
+    }
 }

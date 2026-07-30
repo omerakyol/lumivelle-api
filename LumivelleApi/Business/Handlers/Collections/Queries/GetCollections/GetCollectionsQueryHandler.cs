@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 using MongoDB.Bson;
 
@@ -40,10 +39,7 @@ public class GetCollectionsQueryHandler(
         };
 
         var collections = await collectionRepository.GetByAccountIdAsync(accountId);
-        foreach (var collection in collections)
-        {
-            results.Add(await BuildCollectionResultAsync(accountId, collection));
-        }
+        foreach (var collection in collections) results.Add(await BuildCollectionResultAsync(accountId, collection));
 
         return new SuccessDataResult<List<CollectionResult>>(results);
     }
@@ -73,7 +69,8 @@ public class GetCollectionsQueryHandler(
 
     private async Task<string[]> BuildPreviewImageUrlsAsync(ObjectId accountId, ObjectId? collectionId)
     {
-        var saves = await savedPostRepository.GetByAccountAndCollectionPageAsync(accountId, collectionId, null, PreviewCount);
+        var saves = await savedPostRepository.GetByAccountAndCollectionPageAsync(accountId, collectionId, null,
+            PreviewCount);
         if (saves.Count == 0)
             return [];
 

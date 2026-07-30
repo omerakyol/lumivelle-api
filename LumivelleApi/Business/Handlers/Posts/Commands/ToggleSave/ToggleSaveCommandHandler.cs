@@ -3,11 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -42,7 +42,7 @@ public class ToggleSaveCommandHandler(
 
         if (existing != null)
         {
-            await savedPostRepository.DeleteAsync(existing.Id, softDelete: false);
+            await savedPostRepository.DeleteAsync(existing.Id, false);
             post.SaveCount = Math.Max(0, post.SaveCount - 1);
             isSaved = false;
         }

@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 using MongoDB.Bson;
 
@@ -72,7 +71,7 @@ public class GetOutfitSuggestionsQueryHandler(
                 comboItems.Add(pick);
             }
 
-            var score = (int)System.Math.Round(comboItems.Average(i => i.PaletteMatchScore));
+            var score = (int)Math.Round(comboItems.Average(i => i.PaletteMatchScore));
             combos.Add(new OutfitComboResult
             {
                 Items = comboItems.Select(i => new OutfitComboItemResult

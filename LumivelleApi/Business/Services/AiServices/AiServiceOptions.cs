@@ -1,6 +1,6 @@
-namespace Business.Services.Claude;
+namespace Business.Services.AiServices;
 
-public class ClaudeOptions
+public class AiServiceOptions
 {
     public string ApiKey { get; set; }
     public string Model { get; set; } = "claude-sonnet-4-6";

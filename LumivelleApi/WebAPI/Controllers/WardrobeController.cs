@@ -21,13 +21,13 @@ using IResult = Core.Utilities.Results.IResult;
 namespace WebAPI.Controllers;
 
 /// <summary>
-/// Wardrobe item operations
+///     Wardrobe item operations
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class WardrobeController : BaseApiController
 {
-    /// <summary>Run Claude vision tagging on an uploaded wardrobe photo (preview, not persisted)</summary>
+    /// <summary>Run AiServices vision tagging on an uploaded wardrobe photo (preview, not persisted)</summary>
     [Consumes("application/json")]
     [Produces("application/json", "text/plain")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<AnalyzeWardrobeItemResult>))]

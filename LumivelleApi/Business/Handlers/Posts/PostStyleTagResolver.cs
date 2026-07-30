@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Entities.Concrete;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MongoDB.Bson;
 
 namespace Business.Handlers.Posts;
@@ -36,22 +36,14 @@ public static class PostStyleTagResolver
 
             if (post.WardrobeItemId.HasValue
                 && wardrobeItemsById.TryGetValue(post.WardrobeItemId.Value, out var item))
-            {
                 foreach (var tag in item.StyleTags)
                     tags.Add(tag);
-            }
 
             if (post.OutfitId.HasValue && outfitsById.TryGetValue(post.OutfitId.Value, out var outfit))
-            {
                 foreach (var memberId in outfit.ItemIds)
-                {
                     if (outfitMemberItemsById.TryGetValue(memberId, out var memberItem))
-                    {
                         foreach (var tag in memberItem.StyleTags)
                             tags.Add(tag);
-                    }
-                }
-            }
 
             if (tags.Count > 0)
                 result[post.Id] = tags;

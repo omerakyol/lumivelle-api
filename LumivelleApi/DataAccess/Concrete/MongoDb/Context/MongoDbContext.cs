@@ -1,6 +1,7 @@
 ﻿using Core.Entities.Concrete;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 
 namespace DataAccess.Concrete.MongoDb.Context;
 
@@ -13,6 +14,7 @@ public class MongoDbContext : MongoDbContextBase
     {
         var client = new MongoClient(MongoConnectionSettings.ConnectionString);
         _database = client.GetDatabase(MongoConnectionSettings.DatabaseName);
+        Media = new GridFSBucket(_database, new GridFSBucketOptions { BucketName = "media" });
     }
 
     public IMongoCollection<Account> Accounts => _database.GetCollection<Account>("accounts");
@@ -20,4 +22,7 @@ public class MongoDbContext : MongoDbContextBase
     public IMongoCollection<Language> Languages => _database.GetCollection<Language>("languages");
     public IMongoCollection<Translate> Translates => _database.GetCollection<Translate>("translates");
     public IMongoCollection<Log> Logs => _database.GetCollection<Log>("logs");
+
+    /// <summary>GridFS bucket for binary files (e.g. beauty-profile photos) stored in MongoDB instead of disk.</summary>
+    public GridFSBucket Media { get; }
 }

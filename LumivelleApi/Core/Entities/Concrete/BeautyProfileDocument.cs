@@ -1,7 +1,6 @@
-using Core.Entities;
 using MongoDB.Bson;
 
-namespace Entities.Concrete;
+namespace Core.Entities.Concrete;
 
 public class MakeupBreakdown
 {
@@ -35,18 +34,21 @@ public class BeautyProfileDocument : DocumentDbEntity
     public string Contrast { get; set; }
     public string FaceShape { get; set; }
     public string HairType { get; set; }
-    public string[] Palette { get; set; } = [];
-    public string[] BestColors { get; set; } = [];
-    public string[] NeutralColors { get; set; } = [];
-    public string[] AvoidColors { get; set; } = [];
+    public ColorSwatch[] Palette { get; set; } = [];
+    public ColorSwatch[] BestColors { get; set; } = [];
+    public ColorSwatch[] NeutralColors { get; set; } = [];
+    public ColorSwatch[] AvoidColors { get; set; } = [];
     public MakeupBreakdown MakeupBreakdown { get; set; }
     public HairMetrics HairMetrics { get; set; }
     public string SkinType { get; set; }
     public string[] SkinConcerns { get; set; } = [];
     public string SkinAnalysisNotes { get; set; }
+    public ColorSwatch SkinTone { get; set; } // detected natural skin tone, for foundation/product shade matching
+    public string MetalTone { get; set; } // "Gold", "Silver", "Rose Gold" or "Neutral" — for jewelry/accessory recs
+    public string[] RecommendedProductCategories { get; set; } = []; // e.g. "Foundation", "Blush", "Lipstick"
     public string[] StyleReferences { get; set; } = [];
     public string Headline { get; set; }
     public string Description { get; set; }
     public string RawAnalysisJson { get; set; }
-    public string PhotoUrl { get; set; }
+    public string PhotoUrl { get; set; } // served from MongoDB GridFS, not disk — see IMediaFileRepository
 }

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Business.Handlers.Accounts.Queries.GetAccountPublicProfile;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 using MongoDB.Bson;
 
@@ -69,12 +69,8 @@ public class GetCreatorProfileQueryHandler(
         var weights = new Dictionary<string, int>();
 
         foreach (var item in items)
-        {
-            foreach (var tag in item.StyleTags)
-            {
-                weights[tag] = weights.GetValueOrDefault(tag) + item.WearCount;
-            }
-        }
+        foreach (var tag in item.StyleTags)
+            weights[tag] = weights.GetValueOrDefault(tag) + item.WearCount;
 
         return weights.Count == 0 ? null : weights.OrderByDescending(kv => kv.Value).First().Key;
     }

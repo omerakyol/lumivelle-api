@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Business.BusinessAspects;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -32,7 +32,7 @@ public class ToggleFollowCommandHandler(IFollowRepository followRepository, IAcc
 
         if (existing != null)
         {
-            await followRepository.DeleteAsync(existing.Id, softDelete: false);
+            await followRepository.DeleteAsync(existing.Id, false);
             isFollowing = false;
         }
         else

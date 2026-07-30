@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Core.DataAccess;
-using Entities.Concrete;
+using Core.Entities.Concrete;
 using MongoDB.Bson;
 
 namespace DataAccess.Abstract;

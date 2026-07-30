@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Business.Handlers.StylePreferences.ValidationRules;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
+using Core.Entities.Concrete;
 using Core.Enums;
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MediatR;
 
 namespace Business.Handlers.StylePreferences.Commands.SavePreferences;

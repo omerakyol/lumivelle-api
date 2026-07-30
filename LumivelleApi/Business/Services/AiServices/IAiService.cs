@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Business.Services.Claude;
+namespace Business.Services.AiServices;
 
-public interface IClaudeVisionService
+public interface IAiService
 {
     Task<string> AnalyzeImageAsync(
         byte[] imageBytes,

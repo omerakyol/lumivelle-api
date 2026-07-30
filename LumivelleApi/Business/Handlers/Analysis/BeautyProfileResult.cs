@@ -1,5 +1,5 @@
 using System;
-using Entities.Concrete;
+using Core.Entities.Concrete;
 
 namespace Business.Handlers.Analysis;
 
@@ -11,15 +11,18 @@ public class BeautyProfileResult
     public string Contrast { get; set; }
     public string FaceShape { get; set; }
     public string HairType { get; set; }
-    public string[] Palette { get; set; }
-    public string[] BestColors { get; set; }
-    public string[] NeutralColors { get; set; }
-    public string[] AvoidColors { get; set; }
+    public ColorSwatch[] Palette { get; set; }
+    public ColorSwatch[] BestColors { get; set; }
+    public ColorSwatch[] NeutralColors { get; set; }
+    public ColorSwatch[] AvoidColors { get; set; }
     public MakeupBreakdown MakeupBreakdown { get; set; }
     public HairMetrics HairMetrics { get; set; }
     public string SkinType { get; set; }
     public string[] SkinConcerns { get; set; }
     public string SkinAnalysisNotes { get; set; }
+    public ColorSwatch SkinTone { get; set; }
+    public string MetalTone { get; set; }
+    public string[] RecommendedProductCategories { get; set; }
     public string[] StyleReferences { get; set; }
     public string Headline { get; set; }
     public string Description { get; set; }
@@ -45,6 +48,9 @@ public class BeautyProfileResult
             SkinType = document.SkinType,
             SkinConcerns = document.SkinConcerns,
             SkinAnalysisNotes = document.SkinAnalysisNotes,
+            SkinTone = document.SkinTone,
+            MetalTone = document.MetalTone,
+            RecommendedProductCategories = document.RecommendedProductCategories,
             StyleReferences = document.StyleReferences,
             Headline = document.Headline,
             Description = document.Description,

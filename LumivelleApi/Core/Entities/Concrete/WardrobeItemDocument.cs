@@ -1,8 +1,7 @@
 using System;
-using Core.Entities;
 using MongoDB.Bson;
 
-namespace Entities.Concrete;
+namespace Core.Entities.Concrete;
 
 public class WardrobeItemDocument : DocumentDbEntity
 {

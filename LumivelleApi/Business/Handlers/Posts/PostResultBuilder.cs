@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Entities.Concrete;
 using DataAccess.Abstract;
-using Entities.Concrete;
 using MongoDB.Bson;
 
 namespace Business.Handlers.Posts;

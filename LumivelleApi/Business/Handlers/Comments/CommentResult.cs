@@ -1,6 +1,6 @@
 using System;
 using Business.Handlers.Posts;
-using Entities.Concrete;
+using Core.Entities.Concrete;
 
 namespace Business.Handlers.Comments;
 
