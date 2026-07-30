@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -28,6 +29,7 @@ using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
 using Hangfire.PostgreSql;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -112,19 +114,16 @@ public class BusinessStartup(IConfiguration configuration, IHostEnvironment host
         services.AddScoped<IMediaFileRepository, MediaFileRepository>();
         services.AddScoped<IShadeRepository, ShadeRepository>();
 
-        services.AddSingleton(p =>
-        {
-            var config = p.GetRequiredService<IConfiguration>();
-            var options = config.GetSection("OpenAiOptions").Get<AiServiceOptions>()!;
-            return new OpenAIClient(options.ApiKey);
-        });
+        var firebaseServiceAccountPath = Path.Combine(
+            ((IWebHostEnvironment)HostEnvironment).WebRootPath, "firebase-config.json");
 
-        services.AddSingleton(p =>
-        {
-            var config = p.GetRequiredService<IConfiguration>();
-            var options = config.GetSection("ClaudeOptions").Get<AiServiceOptions>()!;
-            return new AnthropicClient(options.ApiKey);
-        });
+        var aiApiKeys = RemoteConfigApiKeyProvider
+            .GetParametersAsync(firebaseServiceAccountPath, "ClaudeApiKey", "OpenAiApiKey")
+            .GetAwaiter().GetResult();
+
+        services.AddSingleton(_ => new OpenAIClient(aiApiKeys["OpenAiApiKey"]));
+
+        services.AddSingleton(_ => new AnthropicClient(aiApiKeys["ClaudeApiKey"]));
 
         services.AddTransient<OpenAiService>();
         services.AddTransient<ClaudeService>();
