@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Http;
 
 namespace Business.Services.AiServices;
 
 public static class RemoteConfigApiKeyProvider
 {
+    private const string ServerNamespace = "firebase-server";
     private static readonly string[] Scopes = ["https://www.googleapis.com/auth/firebase.remoteconfig"];
 
     public static async Task<Dictionary<string, string>> GetParametersAsync(
@@ -34,20 +34,26 @@ public static class RemoteConfigApiKeyProvider
         // when only scopes are supplied. The Remote Config REST API rejects that and requires a
         // real OAuth2 access token from Google's token endpoint, so UseJwtAccessWithScopes must be
         // disabled to force the token-exchange flow.
-        var serviceAccountCredential = new ServiceAccountCredential(
+        var credential = new ServiceAccountCredential(
             new ServiceAccountCredential.Initializer(clientEmailElement.GetString())
             {
                 Scopes = Scopes,
                 UseJwtAccessWithScopes = false
             }.FromPrivateKey(privateKeyElement.GetString()));
 
-        var accessToken = await serviceAccountCredential.GetAccessTokenForRequestAsync();
-
-        using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        // Google.Apis.FirebaseRemoteConfig.v1 has no typed client for the "Remote Config for
+        // servers" namespace, so the raw endpoint is called directly. The credential is still
+        // wired in the same way every generated Google Apis client does it: as an HTTP message
+        // interceptor via HttpClientFactory, so it attaches/refreshes the bearer token itself
+        // instead of us managing the Authorization header by hand.
+        using var httpClient = new HttpClientFactory().CreateHttpClient(new CreateHttpClientArgs
+        {
+            ApplicationName = "LumivelleApi",
+            Initializers = { credential }
+        });
 
         var response = await httpClient.GetAsync(
-            $"https://firebaseremoteconfig.googleapis.com/v1/projects/{projectId}/remoteConfig");
+            $"https://firebaseremoteconfig.googleapis.com/v1/projects/{projectId}/namespaces/{ServerNamespace}/remoteConfig");
 
         if (!response.IsSuccessStatusCode)
         {
