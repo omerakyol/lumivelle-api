@@ -16,7 +16,7 @@ using MediatR;
 
 namespace Business.Handlers.Wardrobe.Commands.AnalyzeWardrobeItem;
 
-public class ClaudeWardrobeTagDto
+public class WardrobeTagAiDto
 {
     public string Name { get; set; }
     public string Category { get; set; }
@@ -72,7 +72,7 @@ public class AnalyzeWardrobeItemCommandHandler(
             imageBytes, mediaType, SystemPrompt, "Catalogue this wardrobe item.", cancellationToken);
 
         var json = ExtractJson(raw);
-        var parsed = JsonSerializer.Deserialize<ClaudeWardrobeTagDto>(json, JsonOptions)
+        var parsed = JsonSerializer.Deserialize<WardrobeTagAiDto>(json, JsonOptions)
                      ?? throw new ApplicationException("AiServices returned unparseable wardrobe-tag JSON");
 
         var colors = parsed.Colors ?? [];

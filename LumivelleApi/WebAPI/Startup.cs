@@ -227,6 +227,16 @@ public partial class Startup : BusinessStartup
                     shadeRepository.AddAsync(shade).GetAwaiter().GetResult();
                 }
             }
+
+            var dailyEditPresetRepository =
+                seedScope.ServiceProvider.GetRequiredService<IDailyEditPresetRepository>();
+            var existingPresetCount = dailyEditPresetRepository.CountAsync(_ => true).GetAwaiter().GetResult();
+            if (existingPresetCount == 0)
+            {
+                dailyEditPresetRepository
+                    .AddManyAsync(Business.Handlers.Recommendations.DailyEditPresetSeedData.All())
+                    .GetAwaiter().GetResult();
+            }
         }
 
         var configurationManager = app.ApplicationServices.GetService<ConfigurationManager>();
