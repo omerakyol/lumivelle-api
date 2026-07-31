@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
+using Anthropic.SDK;
 using Business.Helpers;
 using Business.Services.AiServices;
 using Core.Constants;
@@ -118,12 +119,15 @@ public class BusinessStartup(IConfiguration configuration, IHostEnvironment host
             ((IWebHostEnvironment)HostEnvironment).WebRootPath, "firebase-config.json");
 
         var aiApiKeys = RemoteConfigApiKeyProvider
-            .GetParametersAsync(firebaseServiceAccountPath, "OpenAiApiKey")
+            .GetParametersAsync(firebaseServiceAccountPath, "ClaudeApiKey", "OpenAiApiKey")
             .GetAwaiter().GetResult();
 
         services.AddSingleton(_ => new OpenAIClient(aiApiKeys["OpenAiApiKey"]));
 
+        services.AddSingleton(_ => new AnthropicClient(aiApiKeys["ClaudeApiKey"]));
+
         services.AddTransient<OpenAiService>();
+        services.AddTransient<ClaudeService>();
         services.AddTransient<IAiServiceFactory, AiServiceFactory>();
 
         var taskSchedulerConfig = Configuration.GetSection("TaskSchedulerOptions").Get<TaskSchedulerConfig>();
