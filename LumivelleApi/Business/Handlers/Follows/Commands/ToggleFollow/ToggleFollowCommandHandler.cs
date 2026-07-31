@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Core.Constants;
 using Core.Entities.Concrete;
 using Core.Extensions;
@@ -16,7 +15,6 @@ namespace Business.Handlers.Follows.Commands.ToggleFollow;
 public class ToggleFollowCommandHandler(IFollowRepository followRepository, IAccountRepository accountRepository)
     : IRequestHandler<ToggleFollowCommandRequest, IDataResult<ToggleFollowResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<ToggleFollowResult>> Handle(
         ToggleFollowCommandRequest request,
         CancellationToken cancellationToken)

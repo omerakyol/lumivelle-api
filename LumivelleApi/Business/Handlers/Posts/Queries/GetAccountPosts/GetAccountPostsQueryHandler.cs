@@ -1,6 +1,5 @@
 using System.Threading;
-using System.Threading.Tasks;
-using Business.BusinessAspects;
+using System.Threading.Tasks; 
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -17,7 +16,6 @@ public class GetAccountPostsQueryHandler(
     IFollowRepository followRepository)
     : IRequestHandler<GetAccountPostsQueryRequest, IDataResult<FeedPageResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<FeedPageResult>> Handle(
         GetAccountPostsQueryRequest request,
         CancellationToken cancellationToken)

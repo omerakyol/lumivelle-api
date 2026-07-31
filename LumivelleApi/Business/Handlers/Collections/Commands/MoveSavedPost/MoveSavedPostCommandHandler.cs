@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Business.BusinessAspects;
+using System.Threading.Tasks; 
 using Core.Constants;
 using Core.Enums;
 using Core.Extensions;
@@ -18,7 +17,6 @@ public class MoveSavedPostCommandHandler(
     IAccountRepository accountRepository)
     : IRequestHandler<MoveSavedPostCommandRequest, IResult>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IResult> Handle(MoveSavedPostCommandRequest request, CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using MediatR;
@@ -12,7 +11,6 @@ namespace Business.Handlers.Shades.Queries.GetShadesByCategory;
 public class GetShadesByCategoryQueryHandler(IShadeRepository shadeRepository)
     : IRequestHandler<GetShadesByCategoryQueryRequest, IDataResult<List<ShadeResult>>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<List<ShadeResult>>> Handle(
         GetShadesByCategoryQueryRequest request,
         CancellationToken cancellationToken)

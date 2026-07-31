@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Business.BusinessAspects;
+using System.Threading.Tasks; 
 using Core.Extensions;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -21,7 +20,7 @@ public class GetStyleCategoryQueryHandler(
 {
     private const int SecondaryTagCount = 4;
 
-    [SecuredOperation(Priority = 1)]
+
     public async Task<IDataResult<StyleCategoryPageResult>> Handle(
         GetStyleCategoryQueryRequest request,
         CancellationToken cancellationToken)
@@ -29,7 +28,8 @@ public class GetStyleCategoryQueryHandler(
         var viewerAccountId = UserInfoExtensions.GetAccountId();
 
         var allPosts = await postRepository.GetActiveInWindowAsync(null);
-        var tagsByPostId = await PostStyleTagResolver.GetTagsByPostIdAsync(allPosts, wardrobeItemRepository, outfitRepository);
+        var tagsByPostId =
+            await PostStyleTagResolver.GetTagsByPostIdAsync(allPosts, wardrobeItemRepository, outfitRepository);
 
         var primaryMatches = allPosts
             .Where(p => tagsByPostId.TryGetValue(p.Id, out var tags) && tags.Contains(request.StyleTag))

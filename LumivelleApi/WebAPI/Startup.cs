@@ -237,6 +237,14 @@ public partial class Startup : BusinessStartup
                     .AddManyAsync(Business.Handlers.Recommendations.DailyEditPresetSeedData.All())
                     .GetAwaiter().GetResult();
             }
+
+            var languageRepository = seedScope.ServiceProvider.GetRequiredService<ILanguageRepository>();
+            var existingLanguageCount = languageRepository.CountAsync(_ => true).GetAwaiter().GetResult();
+            if (existingLanguageCount == 0)
+            {
+                languageRepository.AddManyAsync(Business.Handlers.Languages.LanguageSeedData.All())
+                    .GetAwaiter().GetResult();
+            }
         }
 
         var configurationManager = app.ApplicationServices.GetService<ConfigurationManager>();

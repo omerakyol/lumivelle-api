@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Business.BusinessAspects;
+using System.Threading.Tasks; 
 using Business.Handlers.Accounts.ValidationRules;
 using Core.Aspects.Autofac.Validation;
 using Core.Constants;
@@ -15,8 +14,7 @@ namespace Business.Handlers.Accounts.Commands.UpdateProfile;
 public class UpdateProfileCommandHandler(IAccountRepository accountRepository)
     : IRequestHandler<UpdateProfileCommandRequest, IResult>
 {
-    [SecuredOperation(Priority = 1)]
-    [ValidationAspect(typeof(UpdateProfileValidator), Priority = 2)]
+    [ValidationAspect(typeof(UpdateProfileValidator), Priority = 1)]
     public async Task<IResult> Handle(UpdateProfileCommandRequest request, CancellationToken cancellationToken)
     {
         var accountId = UserInfoExtensions.GetAccountId();

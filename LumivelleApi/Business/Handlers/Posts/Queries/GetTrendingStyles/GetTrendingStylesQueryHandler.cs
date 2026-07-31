@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.BusinessAspects;
 using Core.Entities.Concrete;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -20,7 +19,7 @@ public class GetTrendingStylesQueryHandler(
 {
     private const int TopCount = 10;
 
-    [SecuredOperation(Priority = 1)]
+
     public async Task<IDataResult<List<TrendResult>>> Handle(
         GetTrendingStylesQueryRequest request,
         CancellationToken cancellationToken)

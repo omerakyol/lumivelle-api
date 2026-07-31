@@ -114,6 +114,7 @@ public class BusinessStartup(IConfiguration configuration, IHostEnvironment host
         services.AddScoped<IFollowRepository, FollowRepository>();
         services.AddScoped<IMediaFileRepository, MediaFileRepository>();
         services.AddScoped<IShadeRepository, ShadeRepository>();
+        services.AddScoped<ILanguageRepository, LanguageRepository>();
 
         var firebaseServiceAccountPath = Path.Combine(
             ((IWebHostEnvironment)HostEnvironment).WebRootPath, "firebase-config.json");

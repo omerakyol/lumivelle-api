@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Business.BusinessAspects;
+using System.Threading.Tasks; 
 using Business.Handlers.Accounts.Queries.GetAccountPublicProfile;
 using Core.Constants;
 using Core.Entities.Concrete;
@@ -23,7 +22,6 @@ public class GetCreatorProfileQueryHandler(
     IBeautyProfileRepository beautyProfileRepository)
     : IRequestHandler<GetCreatorProfileQueryRequest, IDataResult<CreatorProfileResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<CreatorProfileResult>> Handle(
         GetCreatorProfileQueryRequest request,
         CancellationToken cancellationToken)

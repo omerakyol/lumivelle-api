@@ -23,7 +23,6 @@ public class GetCollectionPostsQueryHandler(
     IFollowRepository followRepository)
     : IRequestHandler<GetCollectionPostsQueryRequest, IDataResult<FeedPageResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<FeedPageResult>> Handle(
         GetCollectionPostsQueryRequest request,
         CancellationToken cancellationToken)

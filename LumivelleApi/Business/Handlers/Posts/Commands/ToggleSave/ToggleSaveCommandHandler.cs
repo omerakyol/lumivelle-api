@@ -20,7 +20,6 @@ public class ToggleSaveCommandHandler(
     IAccountRepository accountRepository)
     : IRequestHandler<ToggleSaveCommandRequest, IDataResult<ToggleSaveResult>>
 {
-    [SecuredOperation(Priority = 1)]
     public async Task<IDataResult<ToggleSaveResult>> Handle(
         ToggleSaveCommandRequest request,
         CancellationToken cancellationToken)
