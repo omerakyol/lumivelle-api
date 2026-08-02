@@ -54,6 +54,9 @@ public class ApplePurchaseValidator(IConfiguration configuration) : IApplePurcha
                 PurchaseDate = payload["purchaseDate"] != null
                     ? DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(payload["purchaseDate"].ToString())).DateTime
                     : DateTime.MinValue,
+                ExpiresAt = payload["expiresDate"] != null
+                    ? DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(payload["expiresDate"].ToString())).DateTime
+                    : null,
                 Quantity = payload["quantity"] != null ? int.Parse(payload["quantity"].ToString()) : 0,
                 Type = payload["type"]?.ToString(),
                 Environment = environment,
@@ -200,6 +203,7 @@ public class AppleInAppPurchase
     public string OriginalTransactionId { get; set; }
     public string ProductId { get; set; }
     public DateTime PurchaseDate { get; set; }
+    public DateTime? ExpiresAt { get; set; }
     public int Quantity { get; set; }
     public string Type { get; set; }
     public string Environment { get; set; }
