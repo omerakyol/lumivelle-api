@@ -33,4 +33,13 @@ public class Account : DocumentDbEntity
     public string Bio { get; set; }
     public bool IsVerified { get; set; } = false;
     public bool IsCreator { get; set; } = false;
+
+    public SubscriptionTier SubscriptionTier { get; set; } = SubscriptionTier.Free;
+    public string SubscriptionPlatform { get; set; } // "apple" | "google", null if never subscribed
+    public string SubscriptionProductId { get; set; }
+
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? SubscriptionExpiresAt { get; set; }
+
+    public bool SubscriptionAutoRenewing { get; set; }
 }
