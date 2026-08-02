@@ -28,6 +28,8 @@ public class GetDailyEditQueryHandler(
     private static readonly HashSet<string> AllowedIcons =
         new(StringComparer.OrdinalIgnoreCase) { "sparkles", "sun", "flower", "star", "droplet" };
 
+    private const string DefaultLanguage = "en";
+
     [ValidationAspect(typeof(GetDailyEditValidator), Priority = 2)]
     public async Task<IDataResult<DailyEditResult>> Handle(
         GetDailyEditQueryRequest request,
@@ -39,7 +41,10 @@ public class GetDailyEditQueryHandler(
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 
-        var cached = await dailyRecommendationRepository.GetByAccountAndDateAsync(accountId, request.LocalDate);
+        var language = string.IsNullOrWhiteSpace(account.Language) ? DefaultLanguage : account.Language;
+
+        var cached = await dailyRecommendationRepository.GetByAccountAndDateAsync(
+            accountId, request.LocalDate, language);
         if (cached != null)
             return new SuccessDataResult<DailyEditResult>(MapToResult(cached));
 
@@ -49,7 +54,7 @@ public class GetDailyEditQueryHandler(
 
         var items = await wardrobeItemRepository.GetByAccountIdAsync(accountId, null);
         var paletteHex = profile.Palette?.Select(c => c.Hex).ToArray() ?? [];
-        var outfitRec = BuildOutfitRec(items, paletteHex);
+        var outfitRec = BuildOutfitRec(items, paletteHex, language);
 
         var preset = await PickPresetAsync(accountId, request.LocalDate, profile.Season, profile.Undertone,
             profile.Contrast);
@@ -60,31 +65,31 @@ public class GetDailyEditQueryHandler(
             Palette = paletteHex,
             DailyEdit = new DailyEditItem
             {
-                Title = preset.DailyEditTitle,
-                Subtitle = preset.DailyEditSubtitle,
-                Description = preset.Description,
+                Title = Localize(preset.DailyEditTitle, language),
+                Subtitle = Localize(preset.DailyEditSubtitle, language),
+                Description = Localize(preset.Description, language),
                 ImageUrl = $"https://picsum.photos/seed/{request.LocalDate}-edit/800/1000"
             },
             MakeupRecs = preset.MakeupRecs
                 .Select((m, i) => new MakeupRecItem
                 {
-                    Title = m.Title,
-                    Subtitle = m.Subtitle,
+                    Title = Localize(m.Title, language),
+                    Subtitle = Localize(m.Subtitle, language),
                     Icon = SanitizeIcon(m.Icon),
                     ImageUrl = $"https://picsum.photos/seed/{request.LocalDate}-mk{i}/400/400"
                 })
                 .ToList(),
             OutfitRec = outfitRec,
-            Trending = BuildTrending(GetSeasonFamily(profile.Season)),
+            Trending = BuildTrending(GetSeasonFamily(profile.Season), language),
             Colors = (profile.Palette ?? [])
                 .Take(5)
                 .Select(c => new ColorItem { Name = c.Name, Hex = c.Hex })
                 .ToList(),
-            MakeupDetails = BuildMakeupDetails(profile.MakeupBreakdown),
+            MakeupDetails = BuildMakeupDetails(profile.MakeupBreakdown, language),
             Accessories = preset.AccessoryTitles
                 .Select((title, i) => new AccessoryItem
                 {
-                    Title = title,
+                    Title = Localize(title, language),
                     ImageUrl = $"https://picsum.photos/seed/{request.LocalDate}-acc{i}/400/400"
                 })
                 .ToList()
@@ -94,6 +99,7 @@ public class GetDailyEditQueryHandler(
         {
             AccountId = accountId,
             LocalDate = request.LocalDate,
+            Language = language,
             Season = result.Season,
             Palette = result.Palette,
             DailyEdit = new DailyEditItemValue
@@ -177,14 +183,16 @@ public class GetDailyEditQueryHandler(
         return hash;
     }
 
-    private static OutfitRecItem BuildOutfitRec(List<WardrobeItemDocument> items, string[] palette)
+    private static OutfitRecItem BuildOutfitRec(List<WardrobeItemDocument> items, string[] palette, string language)
     {
+        var description = Localize(OutfitRecDescription, language);
+
         if (items.Count == 0)
         {
             return new OutfitRecItem
             {
-                Title = "Add your wardrobe",
-                Description = "Built around your seasonal palette and saved style preferences.",
+                Title = Localize(EmptyWardrobeTitle, language),
+                Description = description,
                 MatchScore = 0,
                 ImageUrl = "https://picsum.photos/seed/no-wardrobe/400/500",
                 WardrobeItemId = null
@@ -205,7 +213,7 @@ public class GetDailyEditQueryHandler(
         return new OutfitRecItem
         {
             Title = anchor.Item.Name,
-            Description = "Built around your seasonal palette and saved style preferences.",
+            Description = description,
             MatchScore = Math.Min(anchor.Score, 100),
             ImageUrl = anchor.Item.ImageUrl,
             WardrobeItemId = anchor.Item.Id.ToString()
@@ -215,30 +223,114 @@ public class GetDailyEditQueryHandler(
     private static string SanitizeIcon(string icon) =>
         AllowedIcons.Contains(icon ?? "") ? icon.ToLowerInvariant() : "sparkles";
 
-    private static List<MakeupDetailItem> BuildMakeupDetails(MakeupBreakdown breakdown)
+    private static List<MakeupDetailItem> BuildMakeupDetails(MakeupBreakdown breakdown, string language)
     {
         if (breakdown == null) return [];
         var items = new List<MakeupDetailItem>();
         if (!string.IsNullOrWhiteSpace(breakdown.Lips))
-            items.Add(new MakeupDetailItem { Type = "Lip", Value = breakdown.Lips, Icon = "sparkles" });
+            items.Add(new MakeupDetailItem
+                { Type = Localize(MakeupDetailTypes["Lip"], language), Value = breakdown.Lips, Icon = "sparkles" });
         if (!string.IsNullOrWhiteSpace(breakdown.Cheeks))
-            items.Add(new MakeupDetailItem { Type = "Cheek", Value = breakdown.Cheeks, Icon = "flower" });
+            items.Add(new MakeupDetailItem
+                { Type = Localize(MakeupDetailTypes["Cheek"], language), Value = breakdown.Cheeks, Icon = "flower" });
         if (!string.IsNullOrWhiteSpace(breakdown.Eyeshadow))
-            items.Add(new MakeupDetailItem { Type = "Eye", Value = breakdown.Eyeshadow, Icon = "eye" });
+            items.Add(new MakeupDetailItem
+                { Type = Localize(MakeupDetailTypes["Eye"], language), Value = breakdown.Eyeshadow, Icon = "eye" });
         return items;
     }
 
-    private static List<TrendingItem> BuildTrending(string family)
+    private static List<TrendingItem> BuildTrending(string family, string language)
     {
         var seed = family.ToLowerInvariant();
         return
         [
-            new TrendingItem { Title = "Quiet luxury", ImageUrl = $"https://picsum.photos/seed/{seed}-tr1/400/540" },
-            new TrendingItem { Title = "Soft glam", ImageUrl = $"https://picsum.photos/seed/{seed}-tr2/400/540" },
-            new TrendingItem { Title = "Minimal lines", ImageUrl = $"https://picsum.photos/seed/{seed}-tr3/400/540" },
-            new TrendingItem { Title = "Warm neutrals", ImageUrl = $"https://picsum.photos/seed/{seed}-tr4/400/540" }
+            new TrendingItem
+                { Title = Localize(TrendingTitles[0], language), ImageUrl = $"https://picsum.photos/seed/{seed}-tr1/400/540" },
+            new TrendingItem
+                { Title = Localize(TrendingTitles[1], language), ImageUrl = $"https://picsum.photos/seed/{seed}-tr2/400/540" },
+            new TrendingItem
+                { Title = Localize(TrendingTitles[2], language), ImageUrl = $"https://picsum.photos/seed/{seed}-tr3/400/540" },
+            new TrendingItem
+                { Title = Localize(TrendingTitles[3], language), ImageUrl = $"https://picsum.photos/seed/{seed}-tr4/400/540" }
         ];
     }
+
+    /// <summary>
+    /// Resolves a language-keyed dictionary to a single string, falling back to English, then to
+    /// any value present, so an incomplete/missing translation never surfaces an empty string.
+    /// </summary>
+    private static string Localize(Dictionary<string, string> values, string language)
+    {
+        if (values == null || values.Count == 0) return string.Empty;
+        if (values.TryGetValue(language, out var localized) && !string.IsNullOrEmpty(localized))
+            return localized;
+        if (values.TryGetValue(DefaultLanguage, out var fallback) && !string.IsNullOrEmpty(fallback))
+            return fallback;
+        return values.Values.First();
+    }
+
+    private static readonly Dictionary<string, string> EmptyWardrobeTitle = new()
+    {
+        ["en"] = "Add your wardrobe",
+        ["tr"] = "Gardırobunu ekle",
+        ["fr"] = "Ajoutez votre garde-robe",
+        ["es"] = "Añade tu armario",
+        ["ar"] = "أضيفي خزانة ملابسك",
+        ["ru"] = "Добавьте свой гардероб"
+    };
+
+    private static readonly Dictionary<string, string> OutfitRecDescription = new()
+    {
+        ["en"] = "Built around your seasonal palette and saved style preferences.",
+        ["tr"] = "Mevsimsel paletin ve kaydettiğin stil tercihlerin etrafında oluşturuldu.",
+        ["fr"] = "Construit autour de votre palette saisonnière et de vos préférences de style enregistrées.",
+        ["es"] = "Creado en torno a tu paleta estacional y tus preferencias de estilo guardadas.",
+        ["ar"] = "تم إعداده بناءً على باقة ألوان موسمك وتفضيلات الأسلوب المحفوظة لديك.",
+        ["ru"] = "Составлено на основе вашей сезонной палитры и сохранённых предпочтений стиля."
+    };
+
+    private static readonly Dictionary<string, Dictionary<string, string>> MakeupDetailTypes = new()
+    {
+        ["Lip"] = new()
+        {
+            ["en"] = "Lip", ["tr"] = "Dudak", ["fr"] = "Lèvres", ["es"] = "Labios", ["ar"] = "الشفاه",
+            ["ru"] = "Губы"
+        },
+        ["Cheek"] = new()
+        {
+            ["en"] = "Cheek", ["tr"] = "Yanak", ["fr"] = "Joues", ["es"] = "Mejillas", ["ar"] = "الخدود",
+            ["ru"] = "Щёки"
+        },
+        ["Eye"] = new()
+        {
+            ["en"] = "Eye", ["tr"] = "Göz", ["fr"] = "Yeux", ["es"] = "Ojos", ["ar"] = "العيون",
+            ["ru"] = "Глаза"
+        }
+    };
+
+    private static readonly Dictionary<string, string>[] TrendingTitles =
+    [
+        new()
+        {
+            ["en"] = "Quiet luxury", ["tr"] = "Sessiz lüks", ["fr"] = "Luxe discret", ["es"] = "Lujo discreto",
+            ["ar"] = "الفخامة الهادئة", ["ru"] = "Тихая роскошь"
+        },
+        new()
+        {
+            ["en"] = "Soft glam", ["tr"] = "Yumuşak parlaklık", ["fr"] = "Glam doux", ["es"] = "Glam suave",
+            ["ar"] = "لمعان ناعم", ["ru"] = "Мягкий гламур"
+        },
+        new()
+        {
+            ["en"] = "Minimal lines", ["tr"] = "Minimal çizgiler", ["fr"] = "Lignes minimalistes",
+            ["es"] = "Líneas minimalistas", ["ar"] = "خطوط بسيطة", ["ru"] = "Минималистичные линии"
+        },
+        new()
+        {
+            ["en"] = "Warm neutrals", ["tr"] = "Sıcak nötrler", ["fr"] = "Neutres chauds",
+            ["es"] = "Neutros cálidos", ["ar"] = "درجات محايدة دافئة", ["ru"] = "Тёплые нейтральные тона"
+        }
+    ];
 
     private static string GetSeasonFamily(string season)
     {

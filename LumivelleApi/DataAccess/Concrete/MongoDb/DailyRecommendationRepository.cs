@@ -13,10 +13,12 @@ public class DailyRecommendationRepository(MongoDbContext context)
     : MongoDbRepositoryBase<DailyRecommendationDocument>(context.MongoConnectionSettings),
         IDailyRecommendationRepository
 {
-    public async Task<DailyRecommendationDocument> GetByAccountAndDateAsync(ObjectId accountId, string localDate)
+    public async Task<DailyRecommendationDocument> GetByAccountAndDateAsync(
+        ObjectId accountId, string localDate, string language)
     {
         var filter = Builders<DailyRecommendationDocument>.Filter.Eq(x => x.AccountId, accountId)
                      & Builders<DailyRecommendationDocument>.Filter.Eq(x => x.LocalDate, localDate)
+                     & Builders<DailyRecommendationDocument>.Filter.Eq(x => x.Language, language)
                      & Builders<DailyRecommendationDocument>.Filter.Eq(x => x.Status, EntityStatus.Active);
 
         return await _collection.Find(filter).FirstOrDefaultAsync();

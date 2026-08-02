@@ -56,6 +56,7 @@ public class DailyRecommendationDocument : DocumentDbEntity
 {
     public ObjectId AccountId { get; set; }
     public string LocalDate { get; set; }
+    public string Language { get; set; } // 2-letter code the cached copy was rendered in
     public string Season { get; set; }
     public string[] Palette { get; set; } = [];
     public DailyEditItemValue DailyEdit { get; set; }

@@ -7,5 +7,5 @@ namespace DataAccess.Abstract;
 
 public interface IDailyRecommendationRepository : IDocumentDbRepository<DailyRecommendationDocument>
 {
-    Task<DailyRecommendationDocument> GetByAccountAndDateAsync(ObjectId accountId, string localDate);
+    Task<DailyRecommendationDocument> GetByAccountAndDateAsync(ObjectId accountId, string localDate, string language);
 }
