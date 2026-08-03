@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Business.Handlers.InAppPurchase.Apple;
+using Business.Handlers.InAppPurchase.GetStatus;
 using Business.Handlers.InAppPurchase.Google;
 using Business.Handlers.Notification.Commands.GetNotification;
 using Business.Handlers.Notification.Commands.SendNotification;
@@ -52,7 +53,22 @@ public class InAppPurchaseController : BaseApiController
         var result = await Mediator.Send(request);
         return result.Success ? Ok(result) : BadRequest(result.Messages);
     }
-    
+
+    /// <summary>
+    /// Get the current account's subscription status
+    /// </summary>
+    /// <returns></returns>
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<SubscriptionStatusResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [HttpGet("subscription-status")]
+    public async Task<IActionResult> GetSubscriptionStatus()
+    {
+        var result = await Mediator.Send(new GetSubscriptionStatusQueryRequest());
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
     // [AllowAnonymous]
     // [Consumes("application/json")]
     // [Produces("application/json", "text/plain")]
