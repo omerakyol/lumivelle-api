@@ -95,6 +95,14 @@ public class AnalyzeCommandHandler(
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 
+        if (account.SubscriptionTier == SubscriptionTier.Free)
+        {
+            var recentCount = await beautyProfileRepository.CountAsync(x =>
+                x.AccountId == accountId && x.CreatedAt >= DateTime.UtcNow.AddDays(-30));
+            if (recentCount >= 1)
+                throw new ApplicationException(Messages.AnalysisLimitReached);
+        }
+
         await using var memoryStream = new MemoryStream();
         await request.File.CopyToAsync(memoryStream, cancellationToken);
         var imageBytes = memoryStream.ToArray();
