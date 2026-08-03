@@ -48,6 +48,16 @@ public class ValidateAppleReceiptCommandHandler(
         if (result == null)
             throw new ApplicationException(Messages.ReceiptValidationFailed);
 
+        account.SubscriptionTier = result.ExpiresAt.HasValue && result.ExpiresAt.Value > DateTime.UtcNow
+            ? SubscriptionTier.Premium
+            : SubscriptionTier.Free;
+        account.SubscriptionPlatform = "apple";
+        account.SubscriptionProductId = result.ProductId;
+        account.SubscriptionExpiresAt = result.ExpiresAt;
+        account.SubscriptionAutoRenewing = result.TransactionReason != "REFUND";
+
+        await accountRepository.UpdateAsync(account, x => x.Id == account.Id);
+
         return new SuccessDataResult<AppleInAppPurchase>(result);
     }
 }

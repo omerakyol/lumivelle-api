@@ -8,7 +8,6 @@ using Core.Enums;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using FluentValidation;
-using Google.Apis.AndroidPublisher.v3.Data;
 using MediatR;
 
 
@@ -49,15 +48,18 @@ public class ValidateGoogleReceiptCommandHandler(
         if (account == null)
             throw new ApplicationException(Messages.AccountNotFound);
 
-        var result = await googlePlayValidator.ValidatePurchaseAsync(
-            request.PackageName,
-            request.ProductId,
-            request.PurchaseToken
-        );
-
-        if (result == null)
+        var subscription = await googlePlayValidator.ValidateSubscriptionAsync(request.PackageName, request.PurchaseToken);
+        if (subscription == null)
             throw new ApplicationException(Messages.ReceiptValidationFailed);
 
-        return new SuccessDataResult<ProductPurchase>(result);
+        account.SubscriptionTier = subscription.IsActive ? SubscriptionTier.Premium : SubscriptionTier.Free;
+        account.SubscriptionPlatform = "google";
+        account.SubscriptionProductId = subscription.ProductId;
+        account.SubscriptionExpiresAt = subscription.ExpiresAt;
+        account.SubscriptionAutoRenewing = subscription.AutoRenewing;
+
+        await accountRepository.UpdateAsync(account, x => x.Id == account.Id);
+
+        return new SuccessDataResult<GoogleSubscriptionPurchase>(subscription);
     }
 }
