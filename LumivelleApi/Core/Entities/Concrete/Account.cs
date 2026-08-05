@@ -10,7 +10,13 @@ public class Account : DocumentDbEntity
     public AccountStatus AccountStatus { get; set; }
     public AccountType AccountType { get; set; }
     [BsonRequired] [EmailAddress] public string Email { get; set; }
-    [BsonRequired] public string Password { get; set; }
+
+    // Null for accounts created via Apple/Google sign-in that have never set a password.
+    public string Password { get; set; }
+
+    // Stable per-provider subject id ("sub" claim), null unless that provider has been linked.
+    public string GoogleUserId { get; set; }
+    public string AppleUserId { get; set; }
 
     [Phone] public string Phone { get; set; }
     public string FirebaseToken { get; set; }

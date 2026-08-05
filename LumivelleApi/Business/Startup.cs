@@ -95,6 +95,8 @@ public class BusinessStartup(IConfiguration configuration, IHostEnvironment host
         services.AddScoped<IExpoNotificationService, ExpoNotificationService>();
         services.AddScoped<IApplePurchaseValidator, ApplePurchaseValidator>();
         services.AddScoped<IGooglePlayValidator, GooglePlayValidator>();
+        services.AddScoped<IGoogleSignInVerifier, GoogleSignInVerifier>();
+        services.AddScoped<IAppleSignInVerifier, AppleSignInVerifier>();
 
         services.AddScoped<ILogRepository, LogRepository>();
         services.AddScoped<ITranslateRepository, TranslateRepository>();

@@ -8,4 +8,7 @@ public static partial class Messages
     // Generic credential failure used for both "no such account" and "wrong
     // password" so login responses cannot be used to enumerate valid usernames.
     public static string InvalidCredentials => "InvalidCredentials";
+
+    public static string SocialTokenEmpty => "SocialTokenEmpty";
+    public static string SocialTokenInvalid => "SocialTokenInvalid";
 }

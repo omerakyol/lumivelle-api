@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Business.Handlers.Accounts.Commands.AppleLogin;
 using Business.Handlers.Accounts.Commands.ChangePassword;
 using Business.Handlers.Accounts.Commands.DeleteAccount;
 using Business.Handlers.Accounts.Commands.DeleteProfile;
 using Business.Handlers.Accounts.Commands.ForgotPassword;
+using Business.Handlers.Accounts.Commands.GoogleLogin;
 using Business.Handlers.Accounts.Commands.Login;
 using Business.Handlers.Accounts.Commands.RefreshToken;
 using Business.Handlers.Accounts.Commands.Register;
@@ -63,6 +65,42 @@ public class AccountController : BaseApiController
     [EnableRateLimiting(RateLimitPolicies.Auth)]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginCommandRequest request)
+    {
+        var result = await Mediator.Send(request);
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>
+    /// Account login/registration via a verified Google ID token
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<LoginCommandResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [HttpPost("google-login")]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginCommandRequest request)
+    {
+        var result = await Mediator.Send(request);
+        return result.Success ? Ok(result) : BadRequest(result.Messages);
+    }
+
+    /// <summary>
+    /// Account login/registration via a verified Apple identity token
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [Consumes("application/json")]
+    [Produces("application/json", "text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IDataResult<LoginCommandResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<ResultMessage>))]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [HttpPost("apple-login")]
+    public async Task<IActionResult> AppleLogin([FromBody] AppleLoginCommandRequest request)
     {
         var result = await Mediator.Send(request);
         return result.Success ? Ok(result) : BadRequest(result.Messages);

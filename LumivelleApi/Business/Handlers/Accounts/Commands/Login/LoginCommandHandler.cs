@@ -37,7 +37,9 @@ public class LoginCommandHandler(
         if (account == null)
             throw new ApplicationException(Messages.InvalidCredentials);
 
-        var isPasswordMatch = BCrypt.Net.BCrypt.Verify(request.Password, account!.Password);
+        // Accounts created via Apple/Google sign-in may have no password set yet.
+        var isPasswordMatch = !string.IsNullOrEmpty(account!.Password) &&
+                               BCrypt.Net.BCrypt.Verify(request.Password, account.Password);
         if (!isPasswordMatch)
             throw new ApplicationException(Messages.InvalidCredentials);
 
