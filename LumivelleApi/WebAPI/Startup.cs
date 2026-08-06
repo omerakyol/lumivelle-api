@@ -238,6 +238,16 @@ public partial class Startup : BusinessStartup
                 }
             }
 
+            var makeupLookRepository = seedScope.ServiceProvider.GetRequiredService<IMakeupLookRepository>();
+            var existingMakeupLookCount = makeupLookRepository.CountAsync(_ => true).GetAwaiter().GetResult();
+            if (existingMakeupLookCount == 0)
+            {
+                foreach (var look in Business.Handlers.Analysis.MakeupLookSeedData.All())
+                {
+                    makeupLookRepository.AddAsync(look).GetAwaiter().GetResult();
+                }
+            }
+
             var dailyEditPresetRepository =
                 seedScope.ServiceProvider.GetRequiredService<IDailyEditPresetRepository>();
             var existingPresetCount = dailyEditPresetRepository.CountAsync(_ => true).GetAwaiter().GetResult();
