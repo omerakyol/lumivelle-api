@@ -85,7 +85,7 @@ public class GetDailyEditQueryHandler(
                 .Take(5)
                 .Select(c => new ColorItem { Name = c.Name, Hex = c.Hex })
                 .ToList(),
-            MakeupDetails = BuildMakeupDetails(profile.MakeupBreakdown, language),
+            MakeupDetails = BuildMakeupDetails(profile.BestMakeupLooks, language),
             Accessories = preset.AccessoryTitles
                 .Select((title, i) => new AccessoryItem
                 {
@@ -223,19 +223,23 @@ public class GetDailyEditQueryHandler(
     private static string SanitizeIcon(string icon) =>
         AllowedIcons.Contains(icon ?? "") ? icon.ToLowerInvariant() : "sparkles";
 
-    private static List<MakeupDetailItem> BuildMakeupDetails(MakeupBreakdown breakdown, string language)
+    private static List<MakeupDetailItem> BuildMakeupDetails(TieredMakeupLook[] bestMakeupLooks, string language)
     {
-        if (breakdown == null) return [];
+        // BeautyProfileDocument.MakeupBreakdown (single flat AI-generated shade description) was
+        // removed in favor of tiered catalog-backed looks (rule-engine restructuring). The top
+        // "Best" look's swatches are the closest equivalent source for these detail chips.
+        var look = bestMakeupLooks?.FirstOrDefault();
+        if (look == null) return [];
         var items = new List<MakeupDetailItem>();
-        if (!string.IsNullOrWhiteSpace(breakdown.Lips))
+        if (look.Lips != null && !string.IsNullOrWhiteSpace(look.Lips.Name))
             items.Add(new MakeupDetailItem
-                { Type = Localize(MakeupDetailTypes["Lip"], language), Value = breakdown.Lips, Icon = "sparkles" });
-        if (!string.IsNullOrWhiteSpace(breakdown.Cheeks))
+                { Type = Localize(MakeupDetailTypes["Lip"], language), Value = look.Lips.Name, Icon = "sparkles" });
+        if (look.Cheeks != null && !string.IsNullOrWhiteSpace(look.Cheeks.Name))
             items.Add(new MakeupDetailItem
-                { Type = Localize(MakeupDetailTypes["Cheek"], language), Value = breakdown.Cheeks, Icon = "flower" });
-        if (!string.IsNullOrWhiteSpace(breakdown.Eyeshadow))
+                { Type = Localize(MakeupDetailTypes["Cheek"], language), Value = look.Cheeks.Name, Icon = "flower" });
+        if (look.Eyeshadow != null && !string.IsNullOrWhiteSpace(look.Eyeshadow.Name))
             items.Add(new MakeupDetailItem
-                { Type = Localize(MakeupDetailTypes["Eye"], language), Value = breakdown.Eyeshadow, Icon = "eye" });
+                { Type = Localize(MakeupDetailTypes["Eye"], language), Value = look.Eyeshadow.Name, Icon = "eye" });
         return items;
     }
 

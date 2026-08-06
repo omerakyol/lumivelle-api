@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,11 +26,15 @@ public class AnalyzeCommandHandler(
     IAiServiceFactory aiServiceFactory,
     IAccountRepository accountRepository,
     IMediaFileRepository mediaFileRepository,
+    IMakeupLookRepository makeupLookRepository,
+    IHairstyleRepository hairstyleRepository,
+    IStyleDnaRepository styleDnaRepository,
+    IColorPaletteRepository colorPaletteRepository,
     IHttpContextAccessor httpContextAccessor)
     : IRequestHandler<AnalyzeCommandRequest, IDataResult<BeautyProfileResult>>
 {
     private const string SystemPrompt = """
-                                        You are a professional colour analyst and beauty consultant. Analyze the provided selfie photograph and return a JSON object with these exact fields:
+                                        You are a professional colour analyst. Analyze the provided selfie photograph and return a JSON object with these exact fields:
 
                                         {
                                           "season": string,         // one of: "Spring", "Light Spring", "Warm Spring", "Clear Spring", "Summer", "Light Summer", "Cool Summer", "Soft Summer", "Autumn", "Soft Autumn", "Warm Autumn", "Deep Autumn", "Winter", "Deep Winter", "Cool Winter", "Clear Winter"
@@ -36,39 +42,19 @@ public class AnalyzeCommandHandler(
                                           "contrast": string,       // one of: "Low", "Medium", "High"
                                           "faceShape": string,      // one of: "Oval", "Round", "Square", "Heart", "Oblong", "Diamond"
                                           "hairType": string,       // one of: "Straight", "Wavy", "Curly", "Coily"
-                                          "palette": ColorSwatch[],      // 10 colors from the seasonal palette (best colors to wear)
-                                          "bestColors": ColorSwatch[],   // same 10 as palette (kept for schema symmetry)
-                                          "neutralColors": ColorSwatch[], // 5 neutral colors
-                                          "avoidColors": ColorSwatch[],  // 5 colors to avoid
-                                          "makeupBreakdown": {
-                                            "lips": string,         // shade description
-                                            "lipsHex": string,
-                                            "cheeks": string,
-                                            "cheeksHex": string,
-                                            "contour": string,
-                                            "contourHex": string,
-                                            "eyeshadow": string,
-                                            "eyeshadowHex": string,
-                                            "liner": string,
-                                            "linerHex": string,
-                                            "brow": string,
-                                            "browHex": string
-                                          },
+                                          "eyeColor": string,       // one of: "Brown", "Hazel", "Green", "Blue", "Gray"
+                                          "eyeShape": string,       // one of: "Almond", "Round", "Hooded", "Monolid", "Downturned", "Upturned"
                                           "hairMetrics": {
                                             "faceShapeDetail": string,
-                                            "jawline": string,
-                                            "forehead": string,
-                                            "density": string
+                                            "jawline": string,     // one of: "Soft", "Medium", "Angular"
+                                            "forehead": string,    // one of: "Small", "Medium", "Large"
+                                            "density": string      // one of: "Low", "Medium", "High"
                                           },
                                           "skinType": string,        // one of: "Oily", "Dry", "Combination", "Normal", "Sensitive"
                                           "skinConcerns": string[],  // visible skin concerns, e.g. "Acne", "Wrinkles", "Redness", "Hyperpigmentation", "Dark Circles", "Enlarged Pores", "Dryness", "Dullness". Empty array if none are visible.
                                           "skinAnalysisNotes": string, // one short sentence summarising the skin concerns, for later product recommendations
                                           "skinTone": ColorSwatch,     // the detected natural skin tone itself, for foundation/concealer shade matching
-                                          "metalTone": string,         // one of: "Gold", "Silver", "Rose Gold", "Neutral" — which jewelry/accessory metal suits them, for jewelry recommendations
-                                          "recommendedProductCategories": string[], // 3-6 product categories worth recommending, e.g. "Foundation", "Blush", "Lipstick", "Eyeshadow Palette", "Hair Color"
-                                          "styleReferences": string[], // 5 style aesthetic keywords
-                                          "headline": string,          // one poetic line like "Warm Autumn, softly luminous"
-                                          "description": string        // one sentence personalised description
+                                          "metalTone": string         // one of: "Gold", "Silver", "Rose Gold", "Neutral" — which jewelry/accessory metal suits them
                                         }
 
                                         Where ColorSwatch is:
@@ -78,7 +64,7 @@ public class AnalyzeCommandHandler(
                                           "hex": string    // hex value, e.g. "#E8DCC8"
                                         }
 
-                                        Return only valid JSON. No markdown, no explanation.
+                                        Do not recommend products, makeup, hairstyles, or styles. Only classify. Return only valid JSON. No markdown, no explanation.
                                         """;
 
     private static readonly JsonSerializerOptions JsonOptions =
@@ -107,8 +93,6 @@ public class AnalyzeCommandHandler(
         await request.File.CopyToAsync(memoryStream, cancellationToken);
         var imageBytes = memoryStream.ToArray();
 
-        // Compress once and reuse the same small JPEG both for the AI call and for storage,
-        // instead of paying the resize/encode cost twice on the original (possibly multi-MB) upload.
         var (compressedBytes, compressedMediaType) =
             await AiImageCompressor.CompressAsync(imageBytes, cancellationToken);
 
@@ -138,28 +122,106 @@ public class AnalyzeCommandHandler(
             Contrast = parsed.Contrast,
             FaceShape = parsed.FaceShape,
             HairType = parsed.HairType,
-            Palette = parsed.Palette ?? [],
-            BestColors = parsed.BestColors ?? [],
-            NeutralColors = parsed.NeutralColors ?? [],
-            AvoidColors = parsed.AvoidColors ?? [],
-            MakeupBreakdown = parsed.MakeupBreakdown,
+            EyeColor = parsed.EyeColor,
+            EyeShape = parsed.EyeShape,
             HairMetrics = parsed.HairMetrics,
             SkinType = parsed.SkinType,
             SkinConcerns = parsed.SkinConcerns ?? [],
             SkinAnalysisNotes = parsed.SkinAnalysisNotes,
             SkinTone = parsed.SkinTone,
             MetalTone = parsed.MetalTone,
-            RecommendedProductCategories = parsed.RecommendedProductCategories ?? [],
-            StyleReferences = parsed.StyleReferences ?? [],
-            Headline = parsed.Headline,
-            Description = parsed.Description,
             RawAnalysisJson = json,
             PhotoUrl = photoUrl
         };
 
+        var palette = await colorPaletteRepository.GetBySeasonAsync(document.Season)
+                      ?? throw new ApplicationException($"No ColorPaletteDocument seeded for season '{document.Season}'");
+        document.Palette = palette.BestColors;
+        document.BestColors = palette.BestColors;
+        document.NeutralColors = palette.NeutralColors;
+        document.AvoidColors = palette.AvoidColors;
+
+        var accountLanguage = string.IsNullOrWhiteSpace(account.Language) ? "en" : account.Language;
+
+        var allLooks = await makeupLookRepository.GetAllAsync();
+        var scoredLooks = allLooks
+            .Select(l => (Look: l, Tier: RecommendationEngine.ScoreMakeupLook(l, document)))
+            .ToList();
+        document.BestMakeupLooks = scoredLooks.Where(x => x.Tier == RecommendationTier.Best)
+            .Take(3).Select(x => ToTieredMakeupLook(x.Look, accountLanguage)).ToArray();
+        document.GoodMakeupLooks = scoredLooks.Where(x => x.Tier == RecommendationTier.Good)
+            .Take(2).Select(x => ToTieredMakeupLook(x.Look, accountLanguage)).ToArray();
+        document.AvoidMakeupLooks = scoredLooks.Where(x => x.Tier == RecommendationTier.Avoid)
+            .Take(2).Select(x => ToTieredMakeupLook(x.Look, accountLanguage)).ToArray();
+
+        var allHairstyles = await hairstyleRepository.GetAllAsync();
+        var scoredHairstyles = allHairstyles
+            .Select(h => (Hairstyle: h, Tier: RecommendationEngine.ScoreHairstyle(h, document)))
+            .ToList();
+        document.BestHairstyles = scoredHairstyles.Where(x => x.Tier == RecommendationTier.Best)
+            .Take(5).Select(x => ToTieredHairstyle(x.Hairstyle, accountLanguage)).ToArray();
+        document.GoodHairstyles = scoredHairstyles.Where(x => x.Tier == RecommendationTier.Good)
+            .Take(3).Select(x => ToTieredHairstyle(x.Hairstyle, accountLanguage)).ToArray();
+
+        var allStyleDnas = await styleDnaRepository.GetAllAsync();
+        var scoredStyleDnas = allStyleDnas
+            .Select(s => (StyleDna: s, Tier: RecommendationEngine.ScoreStyleDna(s, document)))
+            .ToList();
+        document.BestStyleDnas = scoredStyleDnas.Where(x => x.Tier == RecommendationTier.Best)
+            .Take(4).Select(x => ToTieredStyleDna(x.StyleDna, accountLanguage)).ToArray();
+
+        var topStyleDna = document.BestStyleDnas.FirstOrDefault();
+        document.Headline = topStyleDna != null
+            ? $"{document.Season}, {topStyleDna.Name}"
+            : document.Season;
+        document.Description = topStyleDna != null
+            ? $"Your {document.Undertone.ToLowerInvariant()}-toned {document.Season} palette pairs beautifully with {topStyleDna.Name}."
+            : $"Your {document.Undertone.ToLowerInvariant()}-toned {document.Season} palette, uniquely yours.";
+
         await beautyProfileRepository.AddAsync(document);
 
         return new SuccessDataResult<BeautyProfileResult>(BeautyProfileResult.FromDocument(document));
+    }
+
+    private static TieredMakeupLook ToTieredMakeupLook(MakeupLookDocument look, string language) => new()
+    {
+        Id = look.Id.ToString(),
+        Title = Localize(look.Title, language),
+        Lips = look.Lips,
+        Cheeks = look.Cheeks,
+        Contour = look.Contour,
+        Eyeshadow = look.Eyeshadow,
+        Liner = look.Liner,
+        Brow = look.Brow
+    };
+
+    private static TieredHairstyle ToTieredHairstyle(HairstyleDocument hairstyle, string language) => new()
+    {
+        Id = hairstyle.Id.ToString(),
+        Title = Localize(hairstyle.Title, language),
+        Description = Localize(hairstyle.Description, language)
+    };
+
+    private static TieredStyleDna ToTieredStyleDna(StyleDnaDocument styleDna, string language) => new()
+    {
+        Id = styleDna.Id.ToString(),
+        Name = Localize(styleDna.Name, language),
+        SignaturePieces = styleDna.SignaturePieces.TryGetValue(language, out var pieces)
+            ? pieces : styleDna.SignaturePieces.GetValueOrDefault("en", []),
+        Keywords = styleDna.Keywords.TryGetValue(language, out var keywords)
+            ? keywords : styleDna.Keywords.GetValueOrDefault("en", [])
+    };
+
+    private const string DefaultLanguage = "en";
+
+    private static string Localize(Dictionary<string, string> values, string language)
+    {
+        if (values == null || values.Count == 0) return string.Empty;
+        if (values.TryGetValue(language, out var localized) && !string.IsNullOrEmpty(localized))
+            return localized;
+        if (values.TryGetValue(DefaultLanguage, out var fallback) && !string.IsNullOrEmpty(fallback))
+            return fallback;
+        return values.Values.First();
     }
 
     private static string ExtractJson(string raw)
