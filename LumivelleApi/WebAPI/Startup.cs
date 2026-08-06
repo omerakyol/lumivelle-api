@@ -248,6 +248,16 @@ public partial class Startup : BusinessStartup
                 }
             }
 
+            var hairstyleRepository = seedScope.ServiceProvider.GetRequiredService<IHairstyleRepository>();
+            var existingHairstyleCount = hairstyleRepository.CountAsync(_ => true).GetAwaiter().GetResult();
+            if (existingHairstyleCount == 0)
+            {
+                foreach (var hairstyle in Business.Handlers.Analysis.HairstyleSeedData.All())
+                {
+                    hairstyleRepository.AddAsync(hairstyle).GetAwaiter().GetResult();
+                }
+            }
+
             var dailyEditPresetRepository =
                 seedScope.ServiceProvider.GetRequiredService<IDailyEditPresetRepository>();
             var existingPresetCount = dailyEditPresetRepository.CountAsync(_ => true).GetAwaiter().GetResult();
