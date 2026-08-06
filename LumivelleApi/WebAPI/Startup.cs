@@ -258,6 +258,16 @@ public partial class Startup : BusinessStartup
                 }
             }
 
+            var styleDnaRepository = seedScope.ServiceProvider.GetRequiredService<IStyleDnaRepository>();
+            var existingStyleDnaCount = styleDnaRepository.CountAsync(_ => true).GetAwaiter().GetResult();
+            if (existingStyleDnaCount == 0)
+            {
+                foreach (var styleDna in Business.Handlers.Analysis.StyleDnaSeedData.All())
+                {
+                    styleDnaRepository.AddAsync(styleDna).GetAwaiter().GetResult();
+                }
+            }
+
             var dailyEditPresetRepository =
                 seedScope.ServiceProvider.GetRequiredService<IDailyEditPresetRepository>();
             var existingPresetCount = dailyEditPresetRepository.CountAsync(_ => true).GetAwaiter().GetResult();
