@@ -116,6 +116,10 @@ public class BusinessStartup(IConfiguration configuration, IHostEnvironment host
         services.AddScoped<IFollowRepository, FollowRepository>();
         services.AddScoped<IMediaFileRepository, MediaFileRepository>();
         services.AddScoped<IShadeRepository, ShadeRepository>();
+        services.AddScoped<IMakeupLookRepository, MakeupLookRepository>();
+        services.AddScoped<IHairstyleRepository, HairstyleRepository>();
+        services.AddScoped<IStyleDnaRepository, StyleDnaRepository>();
+        services.AddScoped<IColorPaletteRepository, ColorPaletteRepository>();
         services.AddScoped<ILanguageRepository, LanguageRepository>();
 
         var firebaseServiceAccountPath = Path.Combine(
