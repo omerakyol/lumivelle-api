@@ -70,6 +70,28 @@ public class AnalyzeCommandHandler(
     private static readonly JsonSerializerOptions JsonOptions =
         new() { PropertyNameCaseInsensitive = true };
 
+    // {0} = undertone (lowercase), {1} = season, {2} = top matched Style DNA name
+    private static readonly Dictionary<string, string> DescriptionWithStyleDnaTemplates = new()
+    {
+        ["en"] = "Your {0}-toned {1} palette pairs beautifully with {2}.",
+        ["tr"] = "{0} tonlu {1} paletiniz {2} ile mükemmel uyum sağlıyor.",
+        ["fr"] = "Votre palette {1} aux tons {0} s'accorde à merveille avec {2}.",
+        ["es"] = "Tu paleta {1} de tono {0} combina maravillosamente con {2}.",
+        ["ar"] = "تنسجم لوحة ألوانك {1} ذات الدرجة {0} بشكل رائع مع {2}.",
+        ["ru"] = "Ваша палитра {1} с {0} подтоном прекрасно сочетается с {2}."
+    };
+
+    // {0} = undertone (lowercase), {1} = season
+    private static readonly Dictionary<string, string> DescriptionFallbackTemplates = new()
+    {
+        ["en"] = "Your {0}-toned {1} palette, uniquely yours.",
+        ["tr"] = "{0} tonlu {1} paletiniz, size özel.",
+        ["fr"] = "Votre palette {1} aux tons {0}, unique en son genre.",
+        ["es"] = "Tu paleta {1} de tono {0}, únicamente tuya.",
+        ["ar"] = "لوحة ألوانك {1} ذات الدرجة {0}، فريدة بك وحدك.",
+        ["ru"] = "Ваша палитра {1} с {0} подтоном — только ваша."
+    };
+
     [ValidationAspect(typeof(AnalyzeValidator), Priority = 1)]
     public async Task<IDataResult<BeautyProfileResult>> Handle(
         AnalyzeCommandRequest request,
@@ -171,12 +193,13 @@ public class AnalyzeCommandHandler(
             .Take(4).Select(x => ToTieredStyleDna(x.StyleDna, accountLanguage)).ToArray();
 
         var topStyleDna = document.BestStyleDnas.FirstOrDefault();
+        var undertoneLower = (document.Undertone ?? string.Empty).ToLowerInvariant();
         document.Headline = topStyleDna != null
             ? $"{document.Season}, {topStyleDna.Name}"
             : document.Season;
         document.Description = topStyleDna != null
-            ? $"Your {document.Undertone.ToLowerInvariant()}-toned {document.Season} palette pairs beautifully with {topStyleDna.Name}."
-            : $"Your {document.Undertone.ToLowerInvariant()}-toned {document.Season} palette, uniquely yours.";
+            ? string.Format(Localize(DescriptionWithStyleDnaTemplates, accountLanguage), undertoneLower, document.Season, topStyleDna.Name)
+            : string.Format(Localize(DescriptionFallbackTemplates, accountLanguage), undertoneLower, document.Season);
 
         await beautyProfileRepository.AddAsync(document);
 
